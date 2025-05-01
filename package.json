@@ -1,0 +1,20 @@
+{
+  "name": "replyguy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hojaeaga/replyguy.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hojaeaga/replyguy/issues"
+  },
+  "homepage": "https://github.com/Hojaeaga/replyguy#readme"
+}
