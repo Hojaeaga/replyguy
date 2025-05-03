@@ -27,15 +27,18 @@ export function userRouter(userService: UserService): Router {
   router.post(
     "/register/cast",
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      const { userId, event } = req.body;
+      const { type, data } = req.body;
 
-      if (!userId || !event) {
-        res.status(400).json({ error: "Missing userId or event" });
+      if (type !== "cast.create" || !data?.cast) {
+        res.status(400).json({ error: "Invalid webhook payload" });
         return;
       }
 
+      const cast = data.cast;
+      const userId = cast.author.fid; // You can look up your DB user via fid
+
       try {
-        const result = await userService.registerCast(userId, event);
+        const result = await userService.registerCast(userId, cast);
         res.status(200).json({ success: true, data: result });
       } catch (error) {
         console.error("Error in /register/cast:", error);

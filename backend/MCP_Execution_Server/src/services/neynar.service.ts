@@ -141,8 +141,39 @@ export class NeynarService {
     }
   }
 
+  async fetchTrendingFeeds() {
+    try {
+      const res = await axios.get(
+        "https://api.neynar.com/v2/farcaster/feed/trending?limit=20",
+        {
+          headers: this.getHeaders(),
+        },
+      );
+
+      const simplifiedCasts = res.data.casts.map((cast: any) => ({
+        hash: cast.hash,
+        text: cast.text,
+        timestamp: cast.timestamp,
+        channel: cast.channel?.name || null,
+        embedUrls: cast.embeds?.map((e: any) => e.url) || [],
+        frame: cast.frames?.length
+          ? {
+            title: cast.frames[0].title,
+            buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
+          }
+          : null,
+        likes: cast.reactions?.likes_count || 0,
+        recasts: cast.reactions?.recasts_count || 0,
+      }));
+
+      return simplifiedCasts;
+    } catch (err) {
+      console.error("fetchTrendingFeeds error", err);
+      return null;
+    }
+  }
   async aggregateUserData(fid: string) {
-    const [popularCasts, channels,recentCasts] = await Promise.all([
+    const [popularCasts, channels, recentCasts] = await Promise.all([
       this.fetchUserPopularCasts(fid),
       this.fetchUserChannels(fid),
       this.fetchUserRepliesAndRecasts(fid),
