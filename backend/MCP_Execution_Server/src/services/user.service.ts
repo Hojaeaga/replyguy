@@ -1,6 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export class UserRegisterService {
+export class UserService {
   constructor(
     private neynarService: any,
     private aiService: any,
@@ -32,6 +32,22 @@ export class UserRegisterService {
       return { success: true };
     } catch (err: any) {
       console.error("registerUser error", err);
+      return { success: false, error: err.message || err };
+    }
+  }
+
+  async getUser(fid: string) {
+    try {
+      const { data, error } = await this.db
+        .from("user_embeddings")
+        .select("*")
+        .eq("fid", fid);
+
+      if (error) throw error;
+
+      return { success: true, data: data[0] };
+    } catch (err: any) {
+      console.error("getUser error", err);
       return { success: false, error: err.message || err };
     }
   }

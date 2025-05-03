@@ -2,7 +2,7 @@ import { config } from "./config.js";
 import { AvsMCPServer } from "./server/mcp.server.js";
 import { NeynarService } from "./services/neynar.service.js";
 import { AIService } from "./services/ai.service.js";
-import { UserRegisterService } from "./services/user.service.js";
+import { UserService } from "./services/user.service.js";
 import { SupabaseClient } from "@supabase/supabase-js";
 /**
  * Main application entry point
@@ -17,7 +17,7 @@ async function main() {
     const services = {
       neynar: new NeynarService(config.neynar.apiKey, config.neynar.signerUuid),
       ai: new AIService(config.openai.apiKey as string),
-      user: new UserRegisterService(
+      user: new UserService(
         config.network.rpcBaseAddress,
         config.network.privateKey,
         db,
