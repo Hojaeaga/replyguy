@@ -1,6 +1,8 @@
 // services/AIService.ts
 import axios from "axios";
-
+// <similar_user_feeds>
+// ${similarUserFeeds.join("\n")}
+// </similar_user_feeds>
 export class AIService {
   constructor(private openAiApiKey: string) { }
 
@@ -44,7 +46,7 @@ A poor summary would be vague like "This user likes crypto and tech" or include 
       const res = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
-          model: "gpt-4",
+          model: "gpt-4.1-mini",
           messages: [
             {
               role: "system",
@@ -66,14 +68,80 @@ A poor summary would be vague like "This user likes crypto and tech" or include 
       return null;
     }
   }
+  async generateReplyForCast({
+    userCast,
+    similarUserFeeds,
+    trendingFeeds,
+  }: {
+    userCast: string;
+    similarUserFeeds: any[];
+    trendingFeeds: any[];
+  }) {
+    const prompt = `
+<instruction>
+Analyze the user's cast and search through the trending feeds to find the most relevant cast that connects with the user's interests or topic. Reply with the selected trending cast details and explain why it's specifically relevant to the user.
+</instruction>
 
-  async generateEmbeddings(summary: string) {
+<user_cast>
+${userCast}
+</user_cast>
+
+<trending_feeds>
+${trendingFeeds.join("\n")}
+</trending_feeds>
+
+<output_requirements>
+1. First identify key themes, topics, and interests in the user's cast.
+2. Select the SINGLE most relevant cast from the trending feeds that best connects to the user's content.
+3. Structure your reply in two parts:
+   a) The complete details of the relevant trending cast
+   b) A brief explanation (2-3 sentences) of why this specific cast is relevant to the user
+4. The explanation should highlight specific connections between the user's content and the recommended cast.
+5. Keep the total response under 200 words.
+6. Be specific about the connection points rather than making generic statements.
+</output_requirements>
+
+<examples>
+A good reply would include: "I found this trending cast by @username that discusses [specific topic from user's cast]. They explore [key detail] which connects with your interest in [user's specific interest]."
+
+A poor reply would vaguely say "This might interest you" without explaining the specific relevance or connection points.
+</examples>
+    `;
+
+    try {
+      const res = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-4.1-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert conversational AI, generating replies based on user context and trending topics.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        },
+        { headers: this.getHeaders() },
+      );
+
+      return res.data.choices[0].message.content;
+    } catch (err: any) {
+      console.error("generateReplyForCast error", err.response?.data || err);
+      return "Sorry, I couldn't generate a reply at the moment.";
+    }
+  }
+
+  async generateEmbeddings(text: string) {
     try {
       const res = await axios.post(
         "https://api.openai.com/v1/embeddings",
         {
           model: "text-embedding-3-small",
-          input: summary,
+          input: text,
         },
         { headers: this.getHeaders() },
       );

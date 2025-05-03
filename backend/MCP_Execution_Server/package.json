@@ -18,6 +18,7 @@
     "@libp2p/tcp": "^10.1.8",
     "@modelcontextprotocol/sdk": "^1.7.0",
     "@pinata/sdk": "^2.1.0",
+    "@reclaimprotocol/zk-fetch": "^0.3.3",
     "@supabase/supabase-js": "^2.49.4",
     "axios": "^1.9.0",
     "body-parser": "^2.2.0",

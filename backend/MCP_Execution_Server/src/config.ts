@@ -4,10 +4,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const config = {
-  server: {
-    name: "AVS MCP",
-    version: "1.0.0",
-  },
   neynar: {
     apiKey: process.env.NEYNAR_API_KEY ?? "0x",
     signerUuid: process.env.NEYNAR_SIGNER_UUID ?? "0x",
@@ -33,5 +29,9 @@ export const config = {
   api: {
     userAgent: "binance-app/1.0",
     binanceEndpoint: "https://api.binance.com/api/v3/ticker/price",
+  },
+  reclaim: {
+    appId: process.env.RECLAIM_APP_ID ?? "",
+    appSecret: process.env.RECLAIM_APP_SECRET ?? "",
   },
 };

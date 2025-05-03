@@ -1,5 +1,4 @@
-'use strict';
-module.exports = class CustomError {
+export class CustomError {
     error = true
     /**
      * @type {string}
@@ -13,7 +12,7 @@ module.exports = class CustomError {
      * @param {string} message
      * @param {any} data 
      */
-    constructor(message, data) {
+    constructor(message: string, data: any) {
         this.data = data
         this.message = message
     }

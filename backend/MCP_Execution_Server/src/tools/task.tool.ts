@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { AVSService } from "../services/avs.service.js";
-import { IpfsService } from "../services/ipfs.service.js";
+import type { AVSService } from "../services/avs.service.js";
+import type { IpfsService } from "../services/ipfs.service.js";
 
 /**
  * Registers the send-task tool with the MCP server
@@ -16,9 +16,9 @@ export function registerTaskTool(server: any, ipfsService: IpfsService, avsServi
       price: z.string().describe("proof of task"),
       data: z.string().describe("additional data"),
     },
-    async ({ price, data }: {price: any, data: any}) => {
+    async ({ price, data }: { price: any, data: any }) => {
       try {
-        const result = { price: parseFloat(price) };
+        const result = { price: Number.parseFloat(price) };
         const proofOfTask = await ipfsService.publishJSON(result);
         await avsService.sendTask(proofOfTask, data, 0);
 
@@ -26,7 +26,7 @@ export function registerTaskTool(server: any, ipfsService: IpfsService, avsServi
           content: [
             {
               type: "text",
-              text: `Sent successfully`,
+              text: "Sent successfully",
             },
           ],
         };

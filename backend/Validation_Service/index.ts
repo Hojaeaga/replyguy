@@ -1,7 +1,6 @@
-"use strict";
-const app = require("./configs/app.config")
-const PORT = process.env.port || process.env.PORT || 4002
-const dalService = require("./src/dal.service");
+import 'dotenv/config';
+import app from "./configs/app.config.js";
 
-dalService.init();
+const PORT = process.env.port || process.env.PORT || 4002
+
 app.listen(PORT, () => console.log("Server started on port:", PORT))
