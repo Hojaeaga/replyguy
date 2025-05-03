@@ -23,6 +23,7 @@ export class NeynarService {
         },
         { headers: this.getHeaders() },
       );
+      console.log("writeCast", res.data);
       return res.data;
     } catch (err) {
       console.error("writeCast error", err);
@@ -39,6 +40,7 @@ export class NeynarService {
           headers: this.getHeaders(),
         },
       );
+      console.log("fetchUserPopularCasts", res.data);
       return res.data;
     } catch (err) {
       console.error("fetchUserPopularCasts error", err);
@@ -55,6 +57,7 @@ export class NeynarService {
           headers: this.getHeaders(),
         },
       );
+      console.log("fetchUserReactions", res.data);
       return res.data;
     } catch (err) {
       console.error("fetchUserReactions error", err);
@@ -71,6 +74,7 @@ export class NeynarService {
           headers: this.getHeaders(),
         },
       );
+      console.log("fetchUserChannels", res.data);
       return res.data;
     } catch (err) {
       console.error("fetchUserChannels error", err);

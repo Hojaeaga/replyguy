@@ -3,13 +3,13 @@ import { AvsMCPServer } from "./server/mcp.server.js";
 import { NeynarService } from "./services/neynar.service.js";
 import { AIService } from "./services/ai.service.js";
 import { UserService } from "./services/user.service.js";
-import { SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 /**
  * Main application entry point
  */
 async function main() {
   try {
-    const db = new SupabaseClient(
+    const db = createClient(
       config.supabase.SUPABASE_URL as string,
       config.supabase.SUPABASE_ANON_KEY as string,
     );
@@ -35,6 +35,7 @@ async function main() {
     // Create and start server
     const avsServer = new AvsMCPServer(config, services);
     await avsServer.start();
+
   } catch (error) {
     console.error("Fatal error in main():", error);
     process.exit(1);
