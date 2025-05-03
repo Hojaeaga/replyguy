@@ -34,4 +34,8 @@ export const config = {
     userAgent: "binance-app/1.0",
     binanceEndpoint: "https://api.binance.com/api/v3/ticker/price",
   },
+  reclaim: {
+    appId: process.env.RECLAIM_APP_ID ?? "",
+    appSecret: process.env.RECLAIM_APP_SECRET ?? "",
+  },
 };

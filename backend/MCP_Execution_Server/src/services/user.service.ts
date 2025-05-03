@@ -12,7 +12,6 @@ export class UserService {
   async registerUser(fid: string) {
     try {
       const userData = await this.neynarService.aggregateUserData(fid);
-      console.log("User data aggregated:", userData);
       // // 2. Pass it to AI service for summarization
       // const summary = await this.aiService.summarizeUserContext(userData);
       // if (!summary) throw new Error("Summary generation failed");
