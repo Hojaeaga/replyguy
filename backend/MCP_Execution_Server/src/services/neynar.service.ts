@@ -1,11 +1,12 @@
 import axios from "axios";
 import type { ReclaimClient } from '@reclaimprotocol/zk-fetch';
-
+import type { AVSService } from "./avs.service.js";
 export class NeynarService {
   constructor(
     private neynarApiKey: string,
     private signerUuid: string,
     private reclaimClient: ReclaimClient,
+    private avs: AVSService,
   ) { }
 
   private getHeaders() {
@@ -47,30 +48,29 @@ export class NeynarService {
 
     const url = `https://api.neynar.com/v2/farcaster/feed/user/popular?fid=${fid}`;
 
-    let res: any;
+    let proof: any;
 
     try {
-
-
-      res = await this.reclaimClient.zkFetch(
+      proof = await this.reclaimClient.zkFetch(
         url,
         publicOptions,
         privateOptions,
       )
-
-
-
     } catch (err) {
       console.error("fetchUserPopularCasts error", err);
       return null;
     }
 
-    if (res === undefined) {
+    if (proof === undefined) {
       return null;
     }
 
-    const castData = JSON.parse(res.extractedParameterValues.data);
-    console.log("proof", res);
+    const castData = JSON.parse(proof.extractedParameterValues.data);
+    try {
+      await this.avs.sendTask(proof.proof, castData, 0);
+    } catch (err) {
+      console.error("sendTask error", err);
+    }
     return castData;
 
   }

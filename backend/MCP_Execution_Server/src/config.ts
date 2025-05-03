@@ -4,10 +4,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const config = {
-  server: {
-    name: "AVS MCP",
-    version: "1.0.0",
-  },
   neynar: {
     apiKey: process.env.NEYNAR_API_KEY ?? "0x",
     signerUuid: process.env.NEYNAR_SIGNER_UUID ?? "0x",
