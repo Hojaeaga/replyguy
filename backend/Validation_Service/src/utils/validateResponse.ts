@@ -1,5 +1,4 @@
-'use strict';
-module.exports = class CustomResponse {
+export class CustomResponse {
     /**
      * @type {any}
      */
@@ -9,7 +8,7 @@ module.exports = class CustomResponse {
     /**
      * @param {any} data 
      */
-    constructor(data) {
+    constructor(data: any) {
         this.data = data
 
     }
