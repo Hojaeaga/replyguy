@@ -8,7 +8,7 @@ export class AVSService {
   rpcBaseAddress: string;
   privateKey: string;
   wallet: ethers.Wallet;
-  performerAddress: any;
+  performerAddress: string;
   provider: ethers.JsonRpcProvider;
 
   constructor(rpcBaseAddress: string, privateKey: string) {
@@ -30,12 +30,12 @@ export class AVSService {
     return asyncHandler(
       async () => {
         const encodedData = ethers.hexlify(ethers.toUtf8Bytes(data));
-        
+
         const message = ethers.AbiCoder.defaultAbiCoder().encode(
           ["string", "bytes", "address", "uint16"],
           [proofOfTask, encodedData, this.performerAddress, taskDefinitionId]
         );
-        
+
         const messageHash = ethers.keccak256(message);
         const sig = this.wallet.signingKey.sign(messageHash).serialized;
 
@@ -46,7 +46,7 @@ export class AVSService {
           this.performerAddress,
           sig
         ]);
-      }, 
+      },
       "Error sending task to AVS Network"
     );
   }
