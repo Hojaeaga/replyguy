@@ -1,6 +1,8 @@
 // services/AIService.ts
 import axios from "axios";
-
+// <similar_user_feeds>
+// ${similarUserFeeds.join("\n")}
+// </similar_user_feeds>
 export class AIService {
   constructor(private openAiApiKey: string) { }
 
@@ -77,33 +79,32 @@ A poor summary would be vague like "This user likes crypto and tech" or include 
   }) {
     const prompt = `
 <instruction>
-Generate a personalized, engaging, and contextually relevant reply to the following user's cast. The reply should be insightful and should take into consideration the user's previous casts, relevant similar user feeds, and current trending feeds. The response should fit well with the user's tone and style.
+Analyze the user's cast and search through the trending feeds to find the most relevant cast that connects with the user's interests or topic. Reply with the selected trending cast details and explain why it's specifically relevant to the user.
 </instruction>
 
 <user_cast>
 ${userCast}
 </user_cast>
 
-<similar_user_feeds>
-${similarUserFeeds.join("\n")}
-</similar_user_feeds>
-
 <trending_feeds>
 ${trendingFeeds.join("\n")}
 </trending_feeds>
 
 <output_requirements>
-1. The reply should reflect a high degree of personalization, taking cues from the user's previous interactions and interests.
-2. The response should reference or incorporate some of the trending topics.
-3. Keep the tone conversational and engaging, in line with the user's style.
-4. The reply should be 100-200 words long.
-5. Avoid using generic or vague responses. The reply must be specific and well-tailored to the user’s cast.
+1. First identify key themes, topics, and interests in the user's cast.
+2. Select the SINGLE most relevant cast from the trending feeds that best connects to the user's content.
+3. Structure your reply in two parts:
+   a) The complete details of the relevant trending cast
+   b) A brief explanation (2-3 sentences) of why this specific cast is relevant to the user
+4. The explanation should highlight specific connections between the user's content and the recommended cast.
+5. Keep the total response under 200 words.
+6. Be specific about the connection points rather than making generic statements.
 </output_requirements>
 
 <examples>
-A good reply would reference the user’s previous posts or the specific topic they mentioned and tie it with trending themes or similar user interests.
+A good reply would include: "I found this trending cast by @username that discusses [specific topic from user's cast]. They explore [key detail] which connects with your interest in [user's specific interest]."
 
-A poor reply would be generic, such as "That's interesting!" or unrelated to their post.
+A poor reply would vaguely say "This might interest you" without explaining the specific relevance or connection points.
 </examples>
     `;
 

@@ -29,12 +29,12 @@ export function userRouter(userService: UserService): Router {
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       const { type, data } = req.body;
 
-      if (type !== "cast.create" || !data?.cast) {
+      if (type !== "cast.created" || !data) {
         res.status(400).json({ error: "Invalid webhook payload" });
         return;
       }
 
-      const cast = data.cast;
+      const cast = data;
       const userId = cast.author.fid; // You can look up your DB user via fid
 
       try {

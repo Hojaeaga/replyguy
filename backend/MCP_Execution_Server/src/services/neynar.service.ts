@@ -105,31 +105,7 @@ export class NeynarService {
     let proof: any;
 
     try {
-      const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/feed/user/popular",
-        {
-          params: { fid },
-          headers: this.getHeaders(),
-        },
-      );
-
-      const simplifiedCasts = res.data.casts.map((cast: any) => ({
-        hash: cast.hash,
-        text: cast.text,
-        timestamp: cast.timestamp,
-        channel: cast.channel?.name || null,
-        embedUrls: cast.embeds?.map((e: any) => e.url) || [],
-        frame: cast.frames?.length
-          ? {
-            title: cast.frames[0].title,
-            buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
-          }
-          : null,
-        likes: cast.reactions?.likes_count || 0,
-        recasts: cast.reactions?.recasts_count || 0,
-      }));
-
-      return simplifiedCasts;
+      proof = await this.reclaimClient.zkFetch(url, publicOptions, privateOptions);
     } catch (err) {
       console.error("fetchUserPopularCasts error", err);
       return null;
@@ -140,6 +116,23 @@ export class NeynarService {
     }
 
     const castData = JSON.parse(proof.extractedParameterValues.data);
+
+    const simplifiedCasts = castData.casts.map((cast: any) => ({
+      hash: cast.hash,
+      text: cast.text,
+      timestamp: cast.timestamp,
+      channel: cast.channel?.name || null,
+      embedUrls: cast.embeds?.map((e: any) => e.url) || [],
+      frame: cast.frames?.length
+        ? {
+          title: cast.frames[0].title,
+          buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
+        }
+        : null,
+      likes: cast.reactions?.likes_count || 0,
+      recasts: cast.reactions?.recasts_count || 0,
+    }));
+
     try {
       // await this.avs.sendTask(proof.proof, castData, 0);
       await axios.post("http://localhost:4002/task/validate", {
@@ -148,7 +141,8 @@ export class NeynarService {
     } catch (err) {
       console.error("sendTask error", err);
     }
-    return castData;
+
+    return simplifiedCasts;
 
   }
 
@@ -202,7 +196,7 @@ export class NeynarService {
   async fetchTrendingFeeds() {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/feed/trending?limit=20",
+        "https://api.neynar.com/v2/farcaster/feed/trending?limit=10",
         {
           headers: this.getHeaders(),
         },

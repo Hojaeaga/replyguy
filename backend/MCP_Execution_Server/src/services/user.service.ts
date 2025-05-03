@@ -1,6 +1,6 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { NeynarService } from "./neynar.service.js";
-import { AIService } from "./ai.service.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { NeynarService } from "./neynar.service.js";
+import type { AIService } from "./ai.service.js";
 
 export class UserService {
   constructor(
@@ -75,54 +75,60 @@ export class UserService {
       }
 
       // Step 3: Use the match_users_by_embedding function to find similar users
-      const { data: similarUsers, error: similarityError } = await this.db.rpc(
-        "match_users_by_embedding",
-        {
-          query_embedding: castEmbeddings,
-          match_threshold: 0.8, // Set the desired similarity threshold
-          match_count: 5, // Limit to top 5 most similar users
-        },
-      );
+      // const { data: similarUsers, error: similarityError } = await this.db.rpc(
+      //   "match_users_by_embedding",
+      //   {
+      //     query_embedding: castEmbeddings,
+      //     match_threshold: 0.8, // Set the desired similarity threshold
+      //     match_count: 5, // Limit to top 5 most similar users
+      //   },
+      // );
 
-      if (similarityError || !similarUsers) {
-        throw new Error("Error finding similar users");
-      }
 
-      // Step 4: Create a map of the current fid and all similar ones
-      const similarUserMap: any = {};
-      similarUsers.forEach((user: any) => {
-        similarUserMap[user.fid] = user.similarity;
-      });
+      // if (similarityError || !similarUsers) {
+      //   throw new Error("Error finding similar users");
+      // }
 
-      // Step 5: For each similar user from DB, find their casts/feeds
-      const userFeedPromises = Object.keys(similarUserMap).map(
-        async (similarFid) => {
-          const feed = await this.neynarService.fetchUserFeeds(similarFid);
-          return { fid: similarFid, feed };
-        },
-      );
-      const similarUserFeeds = await Promise.all(userFeedPromises);
+      // // Step 4: Create a map of the current fid and all similar ones
+      // const similarUserMap: any = {};
+      // for (const user of similarUsers) {
+      //   similarUserMap[user.fid] = user.similarity;
+      // }
 
-      // Step 6: Find trending feed from Farcaster, limit 20
+      // // Step 5: For each similar user from DB, find their casts/feeds
+      // const userFeedPromises = Object.keys(similarUserMap).map(
+      //   async (similarFid) => {
+      //     const feed = await this.neynarService.fetchUserFeeds(similarFid);
+      //     return { fid: similarFid, feed };
+      //   },
+      // );
+      // const similarUserFeeds = await Promise.all(userFeedPromises);
+
+      // // Step 6: Find trending feed from Farcaster, limit 10
       const trendingFeeds = await this.neynarService.fetchTrendingFeeds();
+      console.log("Trending feeds", trendingFeeds);
 
-      // Step 7: Pass all of this to AI to get a personalized reply
+      // // Step 7: Pass all of this to AI to get a personalized reply
       const aiResponse = await this.aiService.generateReplyForCast({
         userCast: cast.text,
-        similarUserFeeds,
+        similarUserFeeds: [],
         trendingFeeds,
       });
 
-      if (!aiResponse || !aiResponse.replyText) {
-        throw new Error("AI response generation failed");
-      }
+      console.log("AI response", aiResponse);
 
-      const castReply = await this.neynarService.replyToCast({
-        text: aiResponse.replyText,
-        parentHash: cast.hash,
-      });
+      // if (!aiResponse || !aiResponse.replyText) {
+      //   throw new Error("AI response generation failed");
+      // }
 
-      return { success: true, data: castReply };
+      // const castReply = await this.neynarService.replyToCast({
+      //   text: aiResponse,
+      //   parentHash: cast.hash,
+      // });
+
+      // console.log("Cast reply", castReply);
+
+      return { success: true, data: "" };
     } catch (err: any) {
       console.error("registerCast error", err);
       return { success: false, error: err.message || err };

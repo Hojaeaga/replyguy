@@ -1,6 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { createUserRouter } from "../routes/user.routes.js";
+import { userRouter } from "../routes/user.routes.js";
 
 /**
  * Main Execution server class
@@ -19,7 +19,7 @@ export class ExecutionServer {
     this.app.use(bodyParser.json());
 
     // Mount REST routes
-    this.app.use("/api", createUserRouter(this.services.user));
+    this.app.use("/api", userRouter(this.services.user));
 
   }
 
