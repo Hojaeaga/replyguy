@@ -6,15 +6,15 @@ export function createUserRouter(userService: UserService): Router {
   const router = express.Router();
 
   router.post("/register/user", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { address } = req.body;
+    const { fid } = req.body;
 
-    if (!address) {
-      res.status(400).json({ error: "Missing address" });
+    if (!fid) {
+      res.status(400).json({ error: "Missing User FID" });
       return;
     }
 
     try {
-      const result = await userService.registerUser(address);
+      const result = await userService.registerUser(fid);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       console.error("Error in /register/user:", error);

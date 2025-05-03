@@ -48,23 +48,6 @@ export class NeynarService {
     }
   }
 
-  async fetchUserReactions(fid: string) {
-    try {
-      const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/reactions/user",
-        {
-          params: { fid },
-          headers: this.getHeaders(),
-        },
-      );
-      console.log("fetchUserReactions", res.data);
-      return res.data;
-    } catch (err) {
-      console.error("fetchUserReactions error", err);
-      return null;
-    }
-  }
-
   async fetchUserChannels(fid: string) {
     try {
       const res = await axios.get(
@@ -83,15 +66,13 @@ export class NeynarService {
   }
 
   async aggregateUserData(fid: string) {
-    const [popularCasts, reactions, channels] = await Promise.all([
+    const [popularCasts, channels] = await Promise.all([
       this.fetchUserPopularCasts(fid),
-      this.fetchUserReactions(fid),
       this.fetchUserChannels(fid),
     ]);
 
     return {
       popularCasts,
-      reactions,
       channels,
     };
   }

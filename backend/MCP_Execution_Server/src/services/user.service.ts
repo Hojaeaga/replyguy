@@ -1,16 +1,18 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { NeynarService } from "./neynar.service.js";
+import { AIService } from "./ai.service.js";
 
 export class UserService {
   constructor(
-    private neynarService: any,
-    private aiService: any,
+    private neynarService: NeynarService,
+    private aiService: AIService,
     private db: SupabaseClient,
   ) { }
 
   async registerUser(fid: string) {
     try {
       const userData = await this.neynarService.aggregateUserData(fid);
-
+      console.log("User data aggregated:", userData);
       // // 2. Pass it to AI service for summarization
       // const summary = await this.aiService.summarizeUserContext(userData);
       // if (!summary) throw new Error("Summary generation failed");

@@ -18,8 +18,11 @@ async function main() {
       neynar: new NeynarService(config.neynar.apiKey, config.neynar.signerUuid),
       ai: new AIService(config.openai.apiKey as string),
       user: new UserService(
-        config.network.rpcBaseAddress,
-        config.network.privateKey,
+        new NeynarService(
+          config.neynar.apiKey,
+          config.neynar.signerUuid,
+        ),
+        new AIService(config.openai.apiKey as string),
         db,
       ),
       // ipfs: new IpfsService(config.pinata.apiKey, config.pinata.secretApiKey),
