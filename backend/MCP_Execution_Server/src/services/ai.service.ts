@@ -44,7 +44,7 @@ A poor summary would be vague like "This user likes crypto and tech" or include 
       const res = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
-          model: "gpt-4",
+          model: "gpt-4.1-mini",
           messages: [
             {
               role: "system",

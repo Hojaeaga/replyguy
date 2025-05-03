@@ -5,7 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { registerPriceTool } from "../tools/price.tool.js";
 import { registerTaskTool } from "../tools/task.tool.js";
 import { registerSendTaskPrompt } from "../prompts/send-task.prompt.js";
-import { createUserRouter } from "../routes/user.routes.js";
+import { userRouter } from "../routes/user.routes.js";
 
 /**
  * Main AVS MCP server class
@@ -23,20 +23,20 @@ export class AvsMCPServer {
     this.server = new McpServer(
       {
         name: config.server.name,
-        version: config.server.version
+        version: config.server.version,
       },
       {
         capabilities: {
-          prompts: {}
-        }
-      }
+          prompts: {},
+        },
+      },
     );
 
     this.app = express();
     this.app.use(bodyParser.json());
 
     // Mount REST routes
-    this.app.use("/api", createUserRouter(this.services.user));
+    this.app.use("/api", userRouter(this.services.user));
 
     this.initializeServer();
   }
@@ -70,4 +70,3 @@ export class AvsMCPServer {
     }
   }
 }
-
