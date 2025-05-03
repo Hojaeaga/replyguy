@@ -205,6 +205,7 @@ export class NeynarService {
       const simplifiedCasts = res.data.casts.map((cast: any) => ({
         hash: cast.hash,
         text: cast.text,
+        username: cast.author.username,
         timestamp: cast.timestamp,
         channel: cast.channel?.name || null,
         embedUrls: cast.embeds?.map((e: any) => e.url) || [],

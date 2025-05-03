@@ -4,7 +4,7 @@ import axios from "axios";
 // ${similarUserFeeds.join("\n")}
 // </similar_user_feeds>
 export class AIService {
-  constructor(private openAiApiKey: string) { }
+  constructor(private openAiApiKey: string) {}
 
   private getHeaders() {
     return {
@@ -77,38 +77,47 @@ A poor summary would be vague like "This user likes crypto and tech" or include 
     similarUserFeeds: any[];
     trendingFeeds: any[];
   }) {
+    const formattedTrendingFeeds = trendingFeeds
+      .map((feed) => JSON.stringify(feed))
+      .join("\n");
     const prompt = `
-<instruction>
-Analyze the user's cast and search through the trending feeds to find the most relevant cast that connects with the user's interests or topic. Reply with the selected trending cast details and explain why it's specifically relevant to the user.
-</instruction>
+<task>
+Analyze the user's cast and the provided trending feeds to identify and select the SINGLE most relevant trending cast that connects with the user's interests or topic. Only select from the actual trending feeds provided - do not generate or fabricate content.
+</task>
 
 <user_cast>
 ${userCast}
 </user_cast>
 
 <trending_feeds>
-${trendingFeeds.join("\n")}
+${formattedTrendingFeeds}
 </trending_feeds>
 
-<output_requirements>
+<instructions>
 1. First identify key themes, topics, and interests in the user's cast.
-2. Select the SINGLE most relevant cast from the trending feeds that best connects to the user's content.
-3. Structure your reply in two parts:
-   a) The complete details of the relevant trending cast
-   b) A brief explanation (2-3 sentences) of why this specific cast is relevant to the user
-4. The explanation should highlight specific connections between the user's content and the recommended cast.
-5. Keep the total response under 200 words.
-6. Be specific about the connection points rather than making generic statements.
-</output_requirements>
+2. Examine each trending cast in the provided feeds and select only ONE existing cast that best relates to the user's content.
+3. Search if the in the cast can relate to any channel or topic the user is interested in - semantic similarity.
+4. If no relevant casts are found or if all feeds are malformed, respond with: "No relevant trending casts found in the provided data."
+5. Never fabricate or generate casts - only select from what is actually provided in the trending_feeds.
+</instructions>
 
-<examples>
-A good reply would include: "I found this trending cast by @username that discusses [specific topic from user's cast]. They explore [key detail] which connects with your interest in [user's specific interest]."
+<output_format>
+Respond with the following structure:
 
-A poor reply would vaguely say "This might interest you" without explaining the specific relevance or connection points.
-</examples>
+Why this is important to you:
+<relevance_explanation>
+
+You should connect with <author_username>, who said:
+"<cast_text>"
+
+<if channel exists>
+Join the conversation in the <channel_name> channel.
+</if channel exists>
+</output_format>
     `;
 
     try {
+      console.log("generateReplyForCast", prompt);
       const res = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {

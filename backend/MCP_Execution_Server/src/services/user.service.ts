@@ -58,15 +58,15 @@ export class UserService {
       console.log("Received cast for processing", { fid, cast });
 
       // Step 1: Check if the DB has the FID of the user who sent the webhook
-      const { data: userData, error: userError } = await this.db
-        .from("user_embeddings")
-        .select("*")
-        .eq("fid", fid)
-        .single();
-
-      if (userError || !userData) {
-        throw new Error(`User with fid ${fid} not found`);
-      }
+      // const { data: userData, error: userError } = await this.db
+      //   .from("user_embeddings")
+      //   .select("*")
+      //   .eq("fid", fid)
+      //   .single();
+      //
+      // if (userError || !userData) {
+      //   throw new Error(`User with fid ${fid} not found`);
+      // }
 
       // Step 2: Generate embeddings for the received cast
       const castEmbeddings = await this.aiService.generateEmbeddings(cast.text);
@@ -128,7 +128,7 @@ export class UserService {
 
       // console.log("Cast reply", castReply);
 
-      return { success: true, data: "" };
+      return { success: true, data: aiResponse };
     } catch (err: any) {
       console.error("registerCast error", err);
       return { success: false, error: err.message || err };
