@@ -46,7 +46,7 @@ export class NeynarService {
         {
           signer_uuid: this.signerUuid,
           text,
-          parent_hash: parentHash,
+          parent: parentHash,
         },
         { headers: this.getHeaders() },
       );

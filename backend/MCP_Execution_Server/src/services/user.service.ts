@@ -55,7 +55,6 @@ export class UserService {
 
   async registerCast(fid: string, cast: any) {
     try {
-      console.log("Received cast for processing", { fid, cast });
 
       // Step 1: Check if the DB has the FID of the user who sent the webhook
       // const { data: userData, error: userError } = await this.db
@@ -106,7 +105,6 @@ export class UserService {
 
       // // Step 6: Find trending feed from Farcaster, limit 10
       const trendingFeeds = await this.neynarService.fetchTrendingFeeds();
-      console.log("Trending feeds", trendingFeeds);
 
       // // Step 7: Pass all of this to AI to get a personalized reply
       const aiResponse = await this.aiService.generateReplyForCast({
@@ -117,16 +115,16 @@ export class UserService {
 
       console.log("AI response", aiResponse);
 
-      // if (!aiResponse || !aiResponse.replyText) {
-      //   throw new Error("AI response generation failed");
-      // }
+      if (!aiResponse || !aiResponse.replyText) {
+        throw new Error("AI response generation failed");
+      }
 
-      // const castReply = await this.neynarService.replyToCast({
-      //   text: aiResponse,
-      //   parentHash: cast.hash,
-      // });
+      const castReply = await this.neynarService.replyToCast({
+        text: aiResponse,
+        parentHash: cast.hash,
+      });
 
-      // console.log("Cast reply", castReply);
+      console.log("Cast reply", castReply);
 
       return { success: true, data: aiResponse };
     } catch (err: any) {

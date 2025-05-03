@@ -4,7 +4,7 @@ import axios from "axios";
 // ${similarUserFeeds.join("\n")}
 // </similar_user_feeds>
 export class AIService {
-  constructor(private openAiApiKey: string) {}
+  constructor(private openAiApiKey: string) { }
 
   private getHeaders() {
     return {
@@ -104,14 +104,12 @@ ${formattedTrendingFeeds}
 <output_format>
 Respond with the following structure:
 
-Why this is important to you:
-<relevance_explanation>
 
-You should connect with <author_username>, who said:
-"<cast_text>"
+You should connect with @<author_username>, who said:
+"<cast_text>" with https://warpcast.com/<author_username>/<cast_hash>"
 
 <if channel exists>
-Join the conversation in the <channel_name> channel.
+Join the conversation in the /<channel_name> channel.
 </if channel exists>
 </output_format>
     `;
