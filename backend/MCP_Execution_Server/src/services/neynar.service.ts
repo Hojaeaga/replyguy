@@ -30,6 +30,30 @@ export class NeynarService {
     }
   }
 
+  async replyToCast({
+    text,
+    parentHash,
+  }: {
+    text: string;
+    parentHash: string;
+  }) {
+    try {
+      const res = await axios.post(
+        "https://api.neynar.com/v2/farcaster/cast",
+        {
+          signer_uuid: this.signerUuid,
+          text,
+          parent_hash: parentHash,
+        },
+        { headers: this.getHeaders() },
+      );
+      return res.data;
+    } catch (err) {
+      console.error("replyToCast error", err);
+      return null;
+    }
+  }
+
   async fetchUserRepliesAndRecasts(fid: string) {
     try {
       const res = await axios.get(
@@ -172,6 +196,38 @@ export class NeynarService {
       return null;
     }
   }
+
+  async fetchUserFeeds(fid: string) {
+    try {
+      const res = await axios.get(
+        "https://api.neynar.com/v2/farcaster/feed/user",
+        {
+          params: { fid },
+          headers: this.getHeaders(),
+        },
+      );
+      const simplifiedCasts = res.data.casts.map((cast: any) => ({
+        hash: cast.hash,
+        text: cast.text,
+        timestamp: cast.timestamp,
+        channel: cast.channel?.name || null,
+        embedUrls: cast.embeds?.map((e: any) => e.url) || [],
+        frame: cast.frames?.length
+          ? {
+            title: cast.frames[0].title,
+            buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
+          }
+          : null,
+        likes: cast.reactions?.likes_count || 0,
+        recasts: cast.reactions?.recasts_count || 0,
+      }));
+      return simplifiedCasts;
+    } catch (err) {
+      console.error("fetchUserFeeds error", err);
+      return null;
+    }
+  }
+
   async aggregateUserData(fid: string) {
     const [popularCasts, channels, recentCasts] = await Promise.all([
       this.fetchUserPopularCasts(fid),

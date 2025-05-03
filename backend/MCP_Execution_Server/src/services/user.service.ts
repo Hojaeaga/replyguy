@@ -120,7 +120,6 @@ export class UserService {
       const castReply = await this.neynarService.replyToCast({
         text: aiResponse.replyText,
         parentHash: cast.hash,
-        parentFid: cast.author.fid,
       });
 
       return { success: true, data: castReply };

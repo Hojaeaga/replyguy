@@ -66,66 +66,48 @@ A poor summary would be vague like "This user likes crypto and tech" or include 
       return null;
     }
   }
-  async generateReplyForCast(
-    fid: string,
-    cast: any,
-  ): Promise<{ replyText: string }> {
-    try {
-      const castText = cast.text;
-
-      // 1. Generate embedding for the incoming cast
-      const castEmbedding = await this.generateEmbeddings(castText);
-      if (!castEmbedding) throw new Error("Failed to generate cast embedding");
-
-      // 2. Query Supabase for similar users using vector similarity
-      const { data: similarUsers, error } = await this.db.rpc(
-        "match_users_by_embedding",
-        {
-          query_embedding: castEmbedding,
-          match_threshold: 0.75,
-          match_count: 5,
-        },
-      );
-
-      if (error || !similarUsers || similarUsers.length === 0) {
-        console.warn("No similar users found");
-      }
-
-      // 3. Pull recent replies and recasts for these users using Neynar
-      const relatedCasts = [];
-      for (const user of similarUsers) {
-        const repliesAndRecasts = await this.neynarService.getRepliesAndRecasts(
-          user.fid,
-        );
-        relatedCasts.push(...(repliesAndRecasts || []));
-      }
-
-      // 4. Generate the prompt with context
-      const prompt = `
+  async generateReplyForCast({
+    userCast,
+    similarUserFeeds,
+    trendingFeeds,
+  }: {
+    userCast: string;
+    similarUserFeeds: any[];
+    trendingFeeds: any[];
+  }) {
+    const prompt = `
 <instruction>
-Write an engaging, thoughtful reply to the following cast.
-Use the cast content and similar users' interactions for inspiration.
+Generate a personalized, engaging, and contextually relevant reply to the following user's cast. The reply should be insightful and should take into consideration the user's previous casts, relevant similar user feeds, and current trending feeds. The response should fit well with the user's tone and style.
 </instruction>
 
-<cast>
-${castText}
-</cast>
+<user_cast>
+${userCast}
+</user_cast>
 
-<context_from_similar_users>
-${relatedCasts
-          .slice(0, 5)
-          .map((c, i) => `${i + 1}. ${c.text}`)
-          .join("\n")}
-</context_from_similar_users>
+<similar_user_feeds>
+${similarUserFeeds.join("\n")}
+</similar_user_feeds>
 
-<guidelines>
-- Keep tone friendly and natural
-- Ensure relevance to the original cast
-- Avoid generic phrases, use specific keywords if helpful
-- Keep it under 300 characters
-</guidelines>
+<trending_feeds>
+${trendingFeeds.join("\n")}
+</trending_feeds>
+
+<output_requirements>
+1. The reply should reflect a high degree of personalization, taking cues from the user's previous interactions and interests.
+2. The response should reference or incorporate some of the trending topics.
+3. Keep the tone conversational and engaging, in line with the user's style.
+4. The reply should be 100-200 words long.
+5. Avoid using generic or vague responses. The reply must be specific and well-tailored to the user’s cast.
+</output_requirements>
+
+<examples>
+A good reply would reference the user’s previous posts or the specific topic they mentioned and tie it with trending themes or similar user interests.
+
+A poor reply would be generic, such as "That's interesting!" or unrelated to their post.
+</examples>
     `;
 
+    try {
       const res = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -134,7 +116,7 @@ ${relatedCasts
             {
               role: "system",
               content:
-                "You are a Farcaster reply bot that responds in contextually smart and friendly ways.",
+                "You are an expert conversational AI, generating replies based on user context and trending topics.",
             },
             {
               role: "user",
@@ -145,11 +127,10 @@ ${relatedCasts
         { headers: this.getHeaders() },
       );
 
-      const replyText = res.data.choices[0].message.content.trim();
-      return { replyText };
+      return res.data.choices[0].message.content;
     } catch (err: any) {
       console.error("generateReplyForCast error", err.response?.data || err);
-      return { replyText: "Appreciate your cast! 😊" }; // fallback
+      return "Sorry, I couldn't generate a reply at the moment.";
     }
   }
 
