@@ -67,7 +67,10 @@ export class NeynarService {
 
     const castData = JSON.parse(proof.extractedParameterValues.data);
     try {
-      await this.avs.sendTask(proof.proof, castData, 0);
+      // await this.avs.sendTask(proof.proof, castData, 0);
+      await axios.post("http://localhost:4002/task/validate", {
+        proofOfTask: proof,
+      });
     } catch (err) {
       console.error("sendTask error", err);
     }
