@@ -36,9 +36,11 @@ export class NeynarService {
   async replyToCast({
     text,
     parentHash,
+    embeds,
   }: {
     text: string;
     parentHash: string;
+    embeds?: string[];
   }) {
     try {
       const res = await axios.post(
@@ -47,6 +49,7 @@ export class NeynarService {
           signer_uuid: this.signerUuid,
           text,
           parent: parentHash,
+          embeds,
         },
         { headers: this.getHeaders() },
       );

@@ -102,20 +102,22 @@ ${formattedTrendingFeeds}
 </instructions>
 
 <output_format>
-Respond with the following structure:
+You MUST respond with ONLY a valid JSON object containing exactly these two fields:
+- replyText: A string with the message "You should connect with [author_username], who said: '[cast_text]'"
+- link: A string with the URL "https://warpcast.com/[author_username]/[cast_hash]"
 
+If a channel exists, append "Join the conversation in the /[channel_name] channel." to the replyText value.
 
-You should connect with @<author_username>, who said:
-"<cast_text>" with https://warpcast.com/<author_username>/<cast_hash>"
-
-<if channel exists>
-Join the conversation in the /<channel_name> channel.
-</if channel exists>
+Example output:
+{
+  "replyText": "You should connect with username123, who said: 'This is an interesting thought about AI.' Join the conversation in the /ai channel.",
+  "link": "https://warpcast.com/username123/0x123abc"
+}
 </output_format>
+Your response should be a valid JSON object with no additional text or explanation.
     `;
 
     try {
-      console.log("generateReplyForCast", prompt);
       const res = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -135,7 +137,14 @@ Join the conversation in the /<channel_name> channel.
         { headers: this.getHeaders() },
       );
 
-      return res.data.choices[0].message.content;
+      const content = res.data.choices[0].message.content.trim();
+
+      try {
+        return JSON.parse(content);
+      } catch (jsonErr) {
+        console.warn("Response was not valid JSON:", content);
+        return { error: "Invalid JSON format in AI response", raw: content };
+      }
     } catch (err: any) {
       console.error("generateReplyForCast error", err.response?.data || err);
       return "Sorry, I couldn't generate a reply at the moment.";

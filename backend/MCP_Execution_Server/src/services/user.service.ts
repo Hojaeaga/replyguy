@@ -122,6 +122,7 @@ export class UserService {
       const castReply = await this.neynarService.replyToCast({
         text: aiResponse,
         parentHash: cast.hash,
+        embeds:[aiResponse.link],
       });
 
       console.log("Cast reply", castReply);
