@@ -40,7 +40,7 @@ export class NeynarService {
   }: {
     text: string;
     parentHash: string;
-    embeds?: string[];
+    embeds?: [{ url: string }];
   }) {
     try {
       const res = await axios.post(

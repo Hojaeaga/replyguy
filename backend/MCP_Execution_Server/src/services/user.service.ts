@@ -55,7 +55,6 @@ export class UserService {
 
   async registerCast(fid: string, cast: any) {
     try {
-
       // Step 1: Check if the DB has the FID of the user who sent the webhook
       // const { data: userData, error: userError } = await this.db
       //   .from("user_embeddings")
@@ -82,7 +81,6 @@ export class UserService {
       //     match_count: 5, // Limit to top 5 most similar users
       //   },
       // );
-
 
       // if (similarityError || !similarUsers) {
       //   throw new Error("Error finding similar users");
@@ -122,7 +120,11 @@ export class UserService {
       const castReply = await this.neynarService.replyToCast({
         text: aiResponse,
         parentHash: cast.hash,
-        embeds:[aiResponse.link],
+        embeds: [
+          {
+            url: aiResponse.link,
+          },
+        ],
       });
 
       console.log("Cast reply", castReply);
