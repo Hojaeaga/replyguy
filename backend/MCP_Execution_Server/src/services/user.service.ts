@@ -118,7 +118,7 @@ export class UserService {
       }
 
       const castReply = await this.neynarService.replyToCast({
-        text: aiResponse,
+        text: aiResponse.replyText,
         parentHash: cast.hash,
         embeds: [
           {
