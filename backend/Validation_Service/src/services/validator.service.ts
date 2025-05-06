@@ -3,6 +3,8 @@ import { ReclaimService } from "./reclaim.service.js";
 import type { Proof } from "@reclaimprotocol/js-sdk";
 
 export async function validate(ipfsHash: string, expectedLength: string) {
+  console.log("Validating task with IPFS hash:", ipfsHash);
+  console.log("Expected length:", expectedLength);
   const reclaimService = new ReclaimService();
 
   let proof;

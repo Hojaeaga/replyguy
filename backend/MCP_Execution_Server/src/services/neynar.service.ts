@@ -202,21 +202,23 @@ export class NeynarService {
 
     try {
       ipfsHash = await this.ipfsService.publishJSON(proof);
-      console.log("IPFS hash:", ipfsHash);
     } catch (error) {
       console.error("publishJSON error", error);
     }
 
-    try {
-      const result = await this.avs.sendTask(
-        ipfsHash,
-        simplifiedCastsLength,
-        0,
-      );
-      console.log("Sent to AVS Network");
-    } catch (err) {
-      console.error("sendTask error", err);
-    }
+    // try {
+    //   console.log("ipfsHash", ipfsHash);
+    //   console.log("simplifiedCastsLength", simplifiedCastsLength);
+
+    //   await this.avs.sendTask(
+    //     ipfsHash,
+    //     simplifiedCastsLength,
+    //     0,
+    //   );
+    //   console.log("Sent to AVS Network");
+    // } catch (err) {
+    //   console.error("sendTask error", err);
+    // }
 
     return simplifiedCasts;
   }

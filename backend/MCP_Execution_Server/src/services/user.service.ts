@@ -72,15 +72,15 @@ export class UserService {
     console.log("registering cast");
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
-      // const { data: userData, error: userError } = await this.db
-      //   .from("user_embeddings")
-      //   .select("*")
-      //   .eq("fid", fid)
-      //   .single();
-      //
-      // if (userError || !userData) {
-      //   throw new Error(`User with fid ${fid} not found`);
-      // }
+      const { data: userData, error: userError } = await this.db
+        .from("user_embeddings")
+        .select("*")
+        .eq("fid", fid)
+        .single();
+
+      if (userError || !userData) {
+        throw new Error(`User with fid ${fid} not found`);
+      }
 
       // Step 2: Generate embeddings for the received cast
       //
@@ -140,19 +140,19 @@ export class UserService {
         return { success: true, data: aiResponse };
       }
 
-      // const castReply = await this.neynarService.replyToCast({
-      //   text: aiResponse.replyText,
-      //   parentHash: cast.hash,
-      //   embeds: [
-      //     {
-      //       url: aiResponse.link,
-      //     },
-      //   ],
-      // });
+      const castReply = await this.neynarService.replyToCast({
+        text: aiResponse.replyText,
+        parentHash: cast.hash,
+        embeds: [
+          {
+            url: aiResponse.link,
+          },
+        ],
+      });
 
-      // console.log("Cast reply", castReply);
+      console.log("Cast reply", castReply);
 
-      return { success: true, data: aiResponse };
+      return { success: true, data: castReply };
     } catch (err: any) {
       console.error("registerCast error", err);
       return { success: false, error: err.message || err };
