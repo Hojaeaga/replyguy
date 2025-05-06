@@ -103,7 +103,7 @@ ${formattedTrendingFeeds}
 
 <output_format>
 You MUST respond with ONLY a valid JSON object containing exactly these two fields:
-- replyText: A string with the message "You should connect with [author_username], who said: '[cast_text]'"
+- replyText: A string with the message "You should connect with [author_username], who said: '[cast_text]'" - Max 60-70 words, 320 characters.
 - link: A string with the URL "https://warpcast.com/[author_username]/[cast_hash]"
 
 If a channel exists, append "Join the conversation in the /[channel_name] channel." to the replyText value.
