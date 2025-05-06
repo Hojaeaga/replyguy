@@ -16,7 +16,10 @@
     "build": "node scripts/build.js",
     "start": "next start",
     "lint": "next lint",
-    "deploy:vercel": "node scripts/deploy.js"
+    "deploy:vercel": "node scripts/deploy.js",
+    "vercel": "vercel",
+    "prod": "vercel --prod",
+    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true --prod"
   },
   "dependencies": {
     "@farcaster/auth-client": ">=0.3.0 <1.0.0",

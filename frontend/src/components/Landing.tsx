@@ -121,13 +121,18 @@ export default function Home() {
       return;
     }
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/register/${context.user.fid}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/register/user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fid: context.user.fid,
+          }),
         },
-        body: JSON.stringify(context.user)
-      });
+      );
       if (!response.ok) {
         console.error("Registration failed with status:", response.status);
         return;
