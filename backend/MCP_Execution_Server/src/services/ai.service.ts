@@ -16,8 +16,8 @@ export class AIService {
   async summarizeUserContext(userData: any) {
     const prompt = `
 <instruction>
-Generate a comprehensive but concise summary of the user's interests, preferences, and personality based on their Farcaster data. 
-This summary will be used to create embeddings for accurate user cohort matching.
+From the user's Farcaster data, extract a structured keyword profile representing their interests, behaviors, communities, and preferences. 
+This profile will be used to generate embeddings and cluster users into highly relevant cohorts.
 </instruction>
 
 <user_data>
@@ -25,20 +25,19 @@ ${JSON.stringify(userData, null, 2)}
 </user_data>
 
 <output_requirements>
-1. Focus on extracting key interests, topics, and behavioral patterns
-2. Include engagement styles (how they interact with content)
-3. Identify content preferences and themes they gravitate toward
-4. Note any distinct personality traits evident from their activity
-5. Highlight potential affinity groups or communities they might belong to
-6. Keep the summary between 200-300 words for optimal embedding performance
-7. Use specific examples from their data to support your analysis
-8. Return ONLY the summary text with no preamble or explanation
+1. Return a flat list of lowercase, hyphenated keywords (no sentences).
+2. Each keyword should reflect a meaningful trait, behavior, tool, or interest (e.g. 'zora-user', 'frame-builder', 'philosophy-discussions', 'onchain-gaming').
+3. Focus on cohort-defining dimensions: content topics, communities, actions, personality style, and engagement type.
+4. Avoid vague terms like "web3" or "crypto" unless combined with specificity (e.g. 'web3-design', 'crypto-security-research').
+5. No filler words, no explanation — only the keyword list, comma-separated.
 </output_requirements>
 
 <examples>
-A good summary clearly identifies patterns like "Tech enthusiast focused on AI and web3, regularly engages with philosophical discussions, shows interest in DeFi projects especially those focusing on scalability, tends to respond thoughtfully to long-form content..."
+Good output:
+"frame-builder, farcaster-poweruser, zora-poster, thoughtful-replier, ai-curious, defi-scalability, ethcc-attendee, builder-in-public, photography-enthusiast, governance-participant"
 
-A poor summary would be vague like "This user likes crypto and tech" or include irrelevant metadata that doesn't help with cohort matching.
+Bad output:
+"This user enjoys Web3 and tech. They are very active online and like to post." (Too vague, narrative style)
 </examples>
     `;
 

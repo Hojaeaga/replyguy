@@ -125,6 +125,8 @@ export class NeynarService {
     const castData = JSON.parse(proof.extractedParameterValues.data);
 
     const simplifiedCasts = castData.casts.map((cast: any) => ({
+      fid: cast.author.fid,
+      name: cast.author.username,
       hash: cast.hash,
       text: cast.text,
       timestamp: cast.timestamp,

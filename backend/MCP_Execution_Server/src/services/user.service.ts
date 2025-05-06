@@ -25,7 +25,7 @@ export class UserService {
         embeddings,
       });
       if (error) throw error;
-      
+
       return { success: true, data: userData };
     } catch (err: any) {
       console.error("registerUser error", err);
@@ -50,6 +50,7 @@ export class UserService {
   }
 
   async registerCast(fid: string, cast: any) {
+    console.log("Registering cast", cast);
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
       // const { data: userData, error: userError } = await this.db
@@ -72,11 +73,11 @@ export class UserService {
         "match_users_by_embedding",
         {
           query_embedding: castEmbeddings,
-          match_threshold: 0.8, // Set the desired similarity threshold
-          match_count: 5, // Limit to top 5 most similar users
+          match_threshold: 0.2,
+          match_count: 5,
         },
       );
-
+      console.log("Similar users", similarUsers);
       if (similarityError || !similarUsers) {
         throw new Error("Error finding similar users");
       }
@@ -88,8 +89,9 @@ export class UserService {
 
       const userFeedPromises = Object.keys(similarUserMap).map(
         async (similarFid) => {
-          const feed = await this.neynarService.fetchUserFeeds(similarFid);
-          return { fid: similarFid, feed };
+          const casts =
+            await this.neynarService.fetchUserPopularCasts(similarFid);
+          return { casts };
         },
       );
       const similarUserFeeds = await Promise.all(userFeedPromises);
@@ -105,17 +107,17 @@ export class UserService {
         throw new Error("AI response generation failed");
       }
 
-      const castReply = await this.neynarService.replyToCast({
-        text: aiResponse.replyText,
-        parentHash: cast.hash,
-        embeds: [
-          {
-            url: aiResponse.link,
-          },
-        ],
-      });
+      // const castReply = await this.neynarService.replyToCast({
+      //   text: aiResponse.replyText,
+      //   parentHash: cast.hash,
+      //   embeds: [
+      //     {
+      //       url: aiResponse.link,
+      //     },
+      //   ],
+      // });
 
-      console.log("Cast reply", castReply);
+      // console.log("Cast reply", castReply);
 
       return { success: true, data: aiResponse };
     } catch (err: any) {
