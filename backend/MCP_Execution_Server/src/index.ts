@@ -8,6 +8,7 @@ import { NeynarService } from "./services/neynar.service.js";
 import { AIService } from "./services/ai.service.js";
 import { UserService } from "./services/user.service.js";
 import { AVSService } from "./services/avs.service.js";
+import { IpfsService } from "./services/ipfs.service.js";
 
 /**
  * Main application entry point
@@ -24,11 +25,13 @@ async function main() {
   )
 
   const ai = new AIService(config.openai.apiKey as string);
+  console.log("RPC BASE ADDRESS:", config.network.rpcBaseAddress);
   const avs = new AVSService(
-    config.network.rpcBaseAddress,
+    "http://10.8.0.69:8545",
     config.network.privateKey,
   );
-  const neynar = new NeynarService(config.neynar.apiKey, config.neynar.signerUuid, reclaim, avs);
+  const ipfs = new IpfsService(config.pinata.apiKey, config.pinata.secretApiKey);
+  const neynar = new NeynarService(config.neynar.apiKey, config.neynar.signerUuid, reclaim, avs, ipfs);
   const user = new UserService(neynar, ai, db);
 
   // Initialize services
@@ -37,7 +40,7 @@ async function main() {
     ai,
     user,
     reclaim,
-    // ipfs: new IpfsService(config.pinata.apiKey, config.pinata.secretApiKey),
+    ipfs,
     avs,
   };
   const executionServer = new ExecutionServer(config, services);

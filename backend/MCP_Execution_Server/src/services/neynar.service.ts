@@ -1,12 +1,14 @@
 import axios from "axios";
 import type { ReclaimClient } from "@reclaimprotocol/zk-fetch";
 import type { AVSService } from "./avs.service.js";
+import type { IpfsService } from "./ipfs.service.js";
 export class NeynarService {
   constructor(
     private neynarApiKey: string,
     private signerUuid: string,
     private reclaimClient: ReclaimClient,
     private avs: AVSService,
+    private ipfsService: IpfsService
   ) { }
 
   private getHeaders() {
@@ -106,6 +108,7 @@ export class NeynarService {
     const url = `https://api.neynar.com/v2/farcaster/feed/user/popular?fid=${fid}`;
 
     let proof: any;
+    let ipfsHash: any;
 
     try {
       proof = await this.reclaimClient.zkFetch(
@@ -142,11 +145,18 @@ export class NeynarService {
       recasts: cast.reactions?.recasts_count || 0,
     }));
 
+    const simplifiedCastsLength = simplifiedCasts.length.toString();
+
     try {
-      // await this.avs.sendTask(proof.proof, castData, 0);
-      await axios.post("http://localhost:4002/task/validate", {
-        proofOfTask: proof,
-      });
+      ipfsHash = await this.ipfsService.publishJSON(proof);
+      console.log("IPFS hash:", ipfsHash)
+    } catch (error) {
+      console.error("publishJSON error", error);
+    }
+
+    try {
+      const result = await this.avs.sendTask(ipfsHash, (simplifiedCastsLength), 0);
+      console.log("Sent to AVS Network");
     } catch (err) {
       console.error("sendTask error", err);
     }

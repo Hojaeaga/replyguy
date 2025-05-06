@@ -50,7 +50,7 @@ export class UserService {
   }
 
   async registerCast(fid: string, cast: any) {
-    console.log("Registering cast", cast);
+    console.log("registering cast");
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
       // const { data: userData, error: userError } = await this.db
