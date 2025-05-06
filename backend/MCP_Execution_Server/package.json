@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cd build && node index.js"
+    "dev": "cd build && node index.js",
+    "start": "npm run build && node build/index.js"
   },
   "keywords": [],
   "author": "",

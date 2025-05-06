@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const config = {
+  port: process.env.PORT || 4003,
   neynar: {
     apiKey: process.env.NEYNAR_API_KEY ?? "0x",
     signerUuid: process.env.NEYNAR_SIGNER_UUID ?? "0x",
