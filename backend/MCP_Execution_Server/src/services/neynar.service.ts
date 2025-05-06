@@ -2,13 +2,14 @@ import axios from "axios";
 import type { ReclaimClient } from "@reclaimprotocol/zk-fetch";
 import type { AVSService } from "./avs.service.js";
 import type { IpfsService } from "./ipfs.service.js";
+import { config } from "../config.js";
 export class NeynarService {
   constructor(
     private neynarApiKey: string,
     private signerUuid: string,
     private reclaimClient: ReclaimClient,
     private avs: AVSService,
-    private ipfsService: IpfsService
+    private ipfsService: IpfsService,
   ) { }
 
   private getHeaders() {
@@ -18,6 +19,57 @@ export class NeynarService {
     };
   }
 
+  async fetchSubscribedUsers(): Promise<string[]> {
+    try {
+      const res = await axios.get(
+        "https://api.neynar.com/v2/farcaster/webhook",
+        { headers: this.getHeaders() },
+      );
+
+      const webhooks = res.data.webhooks as any[];
+
+      const targetWebhook = webhooks.find(
+        (webhook) => webhook.webhook_id === "01JTB3W4GW48Z58X0HQAM587AJ",
+      );
+
+      if (!targetWebhook) {
+        console.warn(`Webhook with ID not found.`);
+        return [];
+      }
+
+      let authorFids =
+        targetWebhook.subscription?.["cast.created"]?.author_fids;
+      if (!authorFids) {
+        authorFids = [];
+      }
+      return authorFids;
+    } catch (err) {
+      console.error("fetchWebhook error", err);
+      return [];
+    }
+  }
+
+  async updateWebhook({ updatedFids }: { updatedFids: string[] }) {
+    try {
+      const res = await axios.post(
+        "https://api.neynar.com/v2/farcaster/webhook",
+        {
+          name: "receiveCast",
+          url: config.host + "/register/cast",
+          subscription: {
+            "cast.created": {
+              author_fids: updatedFids,
+            },
+          },
+        },
+        { headers: this.getHeaders() },
+      );
+      return res.data;
+    } catch (err) {
+      console.error("writeCast error", err);
+      return null;
+    }
+  }
   async writeCast(text: string) {
     try {
       const res = await axios.post(
@@ -149,13 +201,17 @@ export class NeynarService {
 
     try {
       ipfsHash = await this.ipfsService.publishJSON(proof);
-      console.log("IPFS hash:", ipfsHash)
+      console.log("IPFS hash:", ipfsHash);
     } catch (error) {
       console.error("publishJSON error", error);
     }
 
     try {
-      const result = await this.avs.sendTask(ipfsHash, (simplifiedCastsLength), 0);
+      const result = await this.avs.sendTask(
+        ipfsHash,
+        simplifiedCastsLength,
+        0,
+      );
       console.log("Sent to AVS Network");
     } catch (err) {
       console.error("sendTask error", err);

@@ -9,8 +9,21 @@ export class UserService {
     private db: SupabaseClient,
   ) { }
 
+  async fetchAllUsers() {
+    try {
+      const { data, error } = await this.db.from("user_embeddings").select("*");
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err: any) {
+      console.error("fetchAllUsers error", err);
+      return { success: false, error: err.message || err };
+    }
+  }
+
   async registerUser(fid: string) {
     try {
+      const alreadySubscribedUserIds =
+        await this.neynarService.fetchSubscribedUsers();
       const userData = await this.neynarService.aggregateUserData(fid);
       const summary = await this.aiService.summarizeUserContext(userData);
       console.log("Summary", summary);
@@ -26,6 +39,12 @@ export class UserService {
       });
       if (error) throw error;
 
+      if (!alreadySubscribedUserIds?.includes(fid)) {
+        const newSubscribedUserIds = [...alreadySubscribedUserIds, fid];
+        await this.neynarService.updateWebhook({
+          updatedFids: newSubscribedUserIds,
+        });
+      }
       return { success: true, data: userData };
     } catch (err: any) {
       console.error("registerUser error", err);
