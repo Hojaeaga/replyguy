@@ -106,6 +106,9 @@ export class UserService {
 
       const similarUserMap: any = {};
       for (const user of similarUsers) {
+        if (fid === user.fid) {
+          continue;
+        }
         similarUserMap[user.fid] = {
           summary: user.summary,
         };
