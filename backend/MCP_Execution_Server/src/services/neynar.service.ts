@@ -56,7 +56,7 @@ export class NeynarService {
         {
           webhook_id: "01JTB3W4GW48Z58X0HQAM587AJ",
           name: "receiveCast",
-          url: config.host + "/register/cast",
+          url: config.host + "/api/register/cast",
           subscription: {
             "cast.created": {
               author_fids: numericFids,
