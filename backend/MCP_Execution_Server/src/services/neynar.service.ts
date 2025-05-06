@@ -26,7 +26,7 @@ export class NeynarService {
         { headers: this.getHeaders() },
       );
 
-      const targetWebhook = res.data;
+      const targetWebhook = res.data.webhook;
 
       if (!targetWebhook) {
         console.warn(`Webhook with ID not found.`);
