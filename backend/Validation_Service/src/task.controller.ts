@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { CustomError } from "./utils/validateError.js";
 import { CustomResponse } from "./utils/validateResponse.js";
-import { validate } from "./validator.service.js";
+import { validate } from "./services/validator.service.js";
+
 
 const router = Router()
 

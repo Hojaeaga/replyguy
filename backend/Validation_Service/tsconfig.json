@@ -4,7 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./build",
-    "rootDir": "./",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -12,8 +12,6 @@
   },
   "include": [
     "src/**/*",
-    "index.ts",
-    "configs/**/*"
   ],
   "exclude": [
     "node_modules"
