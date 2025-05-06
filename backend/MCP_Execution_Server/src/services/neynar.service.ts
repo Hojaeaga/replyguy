@@ -51,7 +51,7 @@ export class NeynarService {
 
   async updateWebhook({ updatedFids }: { updatedFids: string[] }) {
     try {
-      const res = await axios.post(
+      const res = await axios.put(
         "https://api.neynar.com/v2/farcaster/webhook",
         {
           name: "receiveCast",
