@@ -122,7 +122,7 @@ export default function Home() {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/register/user`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register/user`,
         {
           method: "POST",
           headers: {
