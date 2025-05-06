@@ -64,7 +64,10 @@ export class UserService {
       // }
 
       // Step 2: Generate embeddings for the received cast
-      const castEmbeddings = await this.aiService.generateEmbeddings(cast.text);
+      //
+      const castSummary = await this.aiService.findMeaningFromText(cast.text);
+      const castEmbeddings =
+        await this.aiService.generateEmbeddings(castSummary);
       if (!castEmbeddings) {
         throw new Error("Embedding generation failed for the cast text");
       }
@@ -73,8 +76,8 @@ export class UserService {
         "match_users_by_embedding",
         {
           query_embedding: castEmbeddings,
-          match_threshold: 0.2,
-          match_count: 5,
+          match_threshold: 0.4,
+          match_count: 3,
         },
       );
       console.log("Similar users", similarUsers);
@@ -84,14 +87,16 @@ export class UserService {
 
       const similarUserMap: any = {};
       for (const user of similarUsers) {
-        similarUserMap[user.fid] = user.similarity;
+        similarUserMap[user.fid] = {
+          summary: user.summary,
+        };
       }
 
       const userFeedPromises = Object.keys(similarUserMap).map(
         async (similarFid) => {
-          const casts =
-            await this.neynarService.fetchUserPopularCasts(similarFid);
-          return { casts };
+          const userData =
+            await this.neynarService.fetchCastsForUser(similarFid);
+          return { userData, summary: similarUserMap[similarFid].summary };
         },
       );
       const similarUserFeeds = await Promise.all(userFeedPromises);
@@ -99,12 +104,21 @@ export class UserService {
 
       const aiResponse = await this.aiService.generateReplyForCast({
         userCast: cast.text,
+        castSummary: castSummary,
         similarUserFeeds,
         trendingFeeds,
       });
 
       if (!aiResponse || !aiResponse.replyText) {
         throw new Error("AI response generation failed");
+      }
+
+      if (
+        aiResponse.replyText ===
+        "No relevant trending casts found in the provided data."
+      ) {
+        console.log("No relevant trending casts found");
+        return { success: true, data: aiResponse };
       }
 
       // const castReply = await this.neynarService.replyToCast({
