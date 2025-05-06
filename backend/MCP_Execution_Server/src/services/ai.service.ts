@@ -80,6 +80,10 @@ A poor summary would be vague like "This user likes crypto and tech" or include 
     const formattedTrendingFeeds = trendingFeeds
       .map((feed) => JSON.stringify(feed))
       .join("\n");
+    const formattedSimilarUserFeeds = similarUserFeeds
+      .map((feed) => JSON.stringify(feed))
+      .join("\n");
+
     const prompt = `
 <task>
 Analyze the user's cast and the provided trending feeds to identify and select the SINGLE most relevant trending cast that connects with the user's interests or topic. Only select from the actual trending feeds provided - do not generate or fabricate content.
@@ -88,6 +92,10 @@ Analyze the user's cast and the provided trending feeds to identify and select t
 <user_cast>
 ${userCast}
 </user_cast>
+
+<similar_user_feeds>
+${formattedSimilarUserFeeds}
+</similar_user_feeds>
 
 <trending_feeds>
 ${formattedTrendingFeeds}

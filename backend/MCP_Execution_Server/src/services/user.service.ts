@@ -81,13 +81,11 @@ export class UserService {
         throw new Error("Error finding similar users");
       }
 
-      // // Step 4: Create a map of the current fid and all similar ones
       const similarUserMap: any = {};
       for (const user of similarUsers) {
         similarUserMap[user.fid] = user.similarity;
       }
 
-      // // Step 5: For each similar user from DB, find their casts/feeds
       const userFeedPromises = Object.keys(similarUserMap).map(
         async (similarFid) => {
           const feed = await this.neynarService.fetchUserFeeds(similarFid);
@@ -95,7 +93,6 @@ export class UserService {
         },
       );
       const similarUserFeeds = await Promise.all(userFeedPromises);
-      console.log("Similar user feeds", similarUserFeeds);
       const trendingFeeds = await this.neynarService.fetchTrendingFeeds();
 
       const aiResponse = await this.aiService.generateReplyForCast({
@@ -103,8 +100,6 @@ export class UserService {
         similarUserFeeds,
         trendingFeeds,
       });
-
-      console.log("AI response", aiResponse);
 
       if (!aiResponse || !aiResponse.replyText) {
         throw new Error("AI response generation failed");
