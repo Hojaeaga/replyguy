@@ -57,6 +57,7 @@ export class NeynarService {
       const res = await axios.put(
         "https://api.neynar.com/v2/farcaster/webhook",
         {
+          webhook_id: "01JTB3W4GW48Z58X0HQAM587AJ",
           name: "receiveCast",
           url: config.host + "/register/cast",
           subscription: {
