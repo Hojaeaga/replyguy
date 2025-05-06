@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 import { userRouter } from "../routes/user.routes.js";
 
 /**
@@ -16,6 +17,11 @@ export class ExecutionServer {
 
 
     this.app = express();
+    this.app.use(cors({
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    })); // Enable CORS for all origins
     this.app.use(bodyParser.json());
 
     // Mount REST routes

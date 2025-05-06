@@ -198,26 +198,33 @@ export class NeynarService {
       recasts: cast.reactions?.recasts_count || 0,
     }));
 
-    const simplifiedCastsLength = simplifiedCasts.length.toString();
-
     try {
       ipfsHash = await this.ipfsService.publishJSON(proof);
+      console.log("ipfsHash", ipfsHash);
     } catch (error) {
       console.error("publishJSON error", error);
     }
 
-    // try {
-    //   console.log("ipfsHash", ipfsHash);
-    //   console.log("simplifiedCastsLength", simplifiedCastsLength);
+    try {
 
-    //   await this.avs.sendTask(
-    //     ipfsHash,
-    //     simplifiedCastsLength,
-    //     0,
-    //   );
-    //   console.log("Sent to AVS Network");
+      await this.avs.sendTask(
+        ipfsHash,
+        proof.claimData.timestampS.toString(),
+        0,
+      );
+      console.log("Sent to AVS Network");
+    } catch (err) {
+      console.error("sendTask error", err);
+    }
+
+    // try {
+    //   await axios.post("http://localhost:4002/task/validate", {
+    //     proofOfTask: ipfsHash,
+    //     data: proof.claimData.timestampS.toString(),
+    //     taskDefinitionId: 0
+    //   });
     // } catch (err) {
-    //   console.error("sendTask error", err);
+    //   console.error("validateTask error", err);
     // }
 
     return simplifiedCasts;
@@ -339,42 +346,95 @@ export class NeynarService {
     }
   }
   async fetchCastsForUser(fid: string) {
+
+    const publicOptions = {
+      method: "GET", // or POST
+    };
+
+    const privateOptions = {
+      headers: {
+        "x-api-key": this.neynarApiKey,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const url = `https://api.neynar.com/v2/farcaster/feed/user/casts?fid=${fid}&limit=100`;
+
+    let proof: any;
+    let ipfsHash: any;
+
     try {
-      const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/feed/user/casts?limit=100",
-        {
-          params: { fid },
-          headers: this.getHeaders(),
-        },
+      proof = await this.reclaimClient.zkFetch(
+        url,
+        publicOptions,
+        privateOptions,
       );
-      const simplifiedCasts = res.data.casts.map((cast: any) => ({
-        author: cast.author.username,
-        fid: cast.author.fid,
-        hash: cast.hash,
-        text: cast.text,
-        timestamp: cast.timestamp,
-        channel: cast.channel?.name || null,
-        embedUrls: cast.embeds?.map((e: any) => e.url) || [],
-        frame: cast.frames?.length
-          ? {
-            title: cast.frames[0].title,
-            buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
-          }
-          : null,
-        likes: cast.reactions?.likes_count || 0,
-        recasts: cast.reactions?.recasts_count || 0,
-        frames:
-          cast.frames?.map((f: any) => ({
-            title: f.title,
-            buttons: f.buttons?.map((b: any) => b.title) || [],
-          })) || [],
-      }));
-      return simplifiedCasts;
     } catch (err) {
       console.error("fetchCastsForUser error", err);
+    }
+
+    if (proof === undefined) {
       return null;
     }
+
+    const castData = JSON.parse(proof.extractedParameterValues.data);
+
+    const simplifiedCasts = castData.casts.map((cast: any) => ({
+      author: cast.author.username,
+      fid: cast.author.fid,
+      hash: cast.hash,
+      text: cast.text,
+      timestamp: cast.timestamp,
+      channel: cast.channel?.name || null,
+      embedUrls: cast.embeds?.map((e: any) => e.url) || [],
+      frame: cast.frames?.length
+        ? {
+          title: cast.frames[0].title,
+          buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
+        }
+        : null,
+      likes: cast.reactions?.likes_count || 0,
+      recasts: cast.reactions?.recasts_count || 0,
+      frames:
+        cast.frames?.map((f: any) => ({
+          title: f.title,
+          buttons: f.buttons?.map((b: any) => b.title) || [],
+        })) || [],
+    }));
+
+    try {
+      ipfsHash = await this.ipfsService.publishJSON(proof);
+      console.log("ipfsHash", ipfsHash);
+    } catch (error) {
+      console.error("publishJSON error", error);
+    }
+
+    try {
+      console.log("ipfsHash", ipfsHash);
+
+      await this.avs.sendTask(
+        ipfsHash,
+        proof.claimData.timestampS.toString(),
+        0,
+      );
+      console.log("Sent to AVS Network");
+    } catch (err) {
+      console.error("sendTask error", err);
+    }
+
+    // try {
+    //   await axios.post("http://localhost:4002/task/validate", {
+    //     proofOfTask: ipfsHash,
+    //     data: proof.claimData.timestampS.toString(),
+    //     taskDefinitionId: 0
+    //   });
+    // } catch (err) {
+    //   console.error("validateTask error", err);
+    // }
+
+    return simplifiedCasts;
   }
+
 
   async aggregateUserData(fid: string) {
     const [popularCasts, channels, casts] = await Promise.all([
