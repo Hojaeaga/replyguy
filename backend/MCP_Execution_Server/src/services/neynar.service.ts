@@ -22,15 +22,11 @@ export class NeynarService {
   async fetchSubscribedUsers(): Promise<string[]> {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/webhook/list",
+        "https://api.neynar.com/v2/farcaster/webhook?webhook_id=01JTB3W4GW48Z58X0HQAM587AJ",
         { headers: this.getHeaders() },
       );
 
-      const webhooks = res.data.webhooks as any[];
-
-      const targetWebhook = webhooks.find(
-        (webhook) => webhook.webhook_id === "01JTB3W4GW48Z58X0HQAM587AJ",
-      );
+      const targetWebhook = res.data;
 
       if (!targetWebhook) {
         console.warn(`Webhook with ID not found.`);
@@ -38,7 +34,8 @@ export class NeynarService {
       }
 
       let authorFids =
-        targetWebhook.subscription?.["cast.created"]?.author_fids;
+        targetWebhook.subscription?.filters["cast.created"]?.author_fids;
+      console.log("authorFids", authorFids);
       if (!authorFids) {
         authorFids = [];
       }
