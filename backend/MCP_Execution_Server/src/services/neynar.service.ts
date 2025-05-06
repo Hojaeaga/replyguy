@@ -22,7 +22,7 @@ export class NeynarService {
   async fetchSubscribedUsers(): Promise<string[]> {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/webhook",
+        "https://api.neynar.com/v2/farcaster/webhook/list",
         { headers: this.getHeaders() },
       );
 
@@ -70,7 +70,7 @@ export class NeynarService {
       );
       return res.data;
     } catch (err) {
-      console.error("writeCast error", err);
+      console.error("updateWebhook error", err);
       return null;
     }
   }
