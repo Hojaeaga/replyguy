@@ -7,8 +7,5 @@ const ipfsHost = process.env.IPFS_HOST || '';
 
 export async function getIPfsTask(cid: string) {
   const { data } = await axios.get(ipfsHost + cid);
-  return {
-    symbol: data.symbol,
-    price: Number.parseFloat(data.price),
-  };
+  return data;
 }
