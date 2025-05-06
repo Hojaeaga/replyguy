@@ -27,7 +27,7 @@ async function main() {
   const ai = new AIService(config.openai.apiKey as string);
   console.log("RPC BASE ADDRESS:", config.network.rpcBaseAddress);
   const avs = new AVSService(
-    "http://10.8.0.69:8545",
+    config.network.rpcBaseAddress,
     config.network.privateKey,
   );
   const ipfs = new IpfsService(config.pinata.apiKey, config.pinata.secretApiKey);

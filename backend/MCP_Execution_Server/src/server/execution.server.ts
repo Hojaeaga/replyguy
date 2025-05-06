@@ -35,7 +35,7 @@ export class ExecutionServer {
   async start() {
     try {
       // Start Express REST API
-      const PORT = this.config.port || 4003;
+      const PORT = this.config.EXECUTION_PORT || 4003;
       this.app.listen(PORT, () => {
         console.log(`Express API running on port ${PORT}`);
       });

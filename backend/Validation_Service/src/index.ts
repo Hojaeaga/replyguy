@@ -9,6 +9,6 @@ app.use(express.json())
 app.use(cors())
 app.use("/task", taskController)
 
-const PORT = process.env.port || process.env.PORT || 4002
+const PORT = process.env.VAILDATION_PORT || 4002
 
 app.listen(PORT, () => console.log("Server started on port:", PORT))

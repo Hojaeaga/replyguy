@@ -101,6 +101,8 @@ services:
       dockerfile: ./Dockerfile
     env_file:
       - .env
+    ports:
+      - "4002:4002"
     networks:
       p2p:
         ipv4_address: 10.8.0.42

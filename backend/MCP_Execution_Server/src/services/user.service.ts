@@ -99,7 +99,7 @@ export class UserService {
           match_count: 3,
         },
       );
-      console.log("Similar users", similarUsers);
+
       if (similarityError || !similarUsers) {
         throw new Error("Error finding similar users");
       }

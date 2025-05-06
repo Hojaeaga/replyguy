@@ -2,8 +2,6 @@ import { getIPfsTask } from "./dal.service.js";
 import { ReclaimService } from "./reclaim.service.js";
 
 export async function validate(ipfsHash: string, timestamp: string) {
-  console.log("Validating task with IPFS hash:", ipfsHash);
-  console.log("Timestamp:", timestamp);
   const reclaimService = new ReclaimService();
 
   let proof;
