@@ -51,6 +51,9 @@ export class NeynarService {
 
   async updateWebhook({ updatedFids }: { updatedFids: string[] }) {
     try {
+      const numericFids = updatedFids
+        .filter((fid) => typeof fid === "number" || !isNaN(Number(fid)))
+        .map((fid) => Number(fid));
       const res = await axios.put(
         "https://api.neynar.com/v2/farcaster/webhook",
         {
@@ -58,7 +61,7 @@ export class NeynarService {
           url: config.host + "/register/cast",
           subscription: {
             "cast.created": {
-              author_fids: updatedFids,
+              author_fids: numericFids,
             },
           },
         },
