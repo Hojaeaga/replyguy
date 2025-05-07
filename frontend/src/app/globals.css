@@ -5,6 +5,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-bricolage: "Bricolage Grotesque", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,12 +18,14 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Inter', Helvetica, Arial, sans-serif;
+  font-family: var(--font-bricolage), sans-serif;
 }
 
 * {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 *::-webkit-scrollbar {
