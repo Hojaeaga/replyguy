@@ -70,10 +70,23 @@ export class UserService {
 
   async registerCast(fid: string, cast: any) {
     console.log("registering cast");
-    if (cast.parent_hash) {
-      console.log("This is a reply,skipping");
+
+    const { data: existingReply } = await this.db
+      .from("cast_replies")
+      .select("cast_hash")
+      .eq("cast_hash", cast.hash)
+      .maybeSingle();
+
+    if (existingReply) {
+      console.log("Cast already processed, skipping");
       return { success: true, data: null };
     }
+
+    if (cast.parent_hash) {
+      console.log("This is a reply, skipping");
+      return { success: true, data: null };
+    }
+
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
       const { data: userData, error: userError } = await this.db
@@ -87,7 +100,6 @@ export class UserService {
       }
 
       // Step 2: Generate embeddings for the received cast
-      //
       const castSummary = await this.aiService.findMeaningFromText(cast.text);
       const castEmbeddings =
         await this.aiService.generateEmbeddings(castSummary);
@@ -103,7 +115,7 @@ export class UserService {
           match_count: 3,
         },
       );
-
+      console.log("Similar users", similarUsers);
       if (similarityError || !similarUsers) {
         throw new Error("Error finding similar users");
       }
@@ -158,6 +170,8 @@ export class UserService {
       });
 
       console.log("Cast reply", castReply);
+
+      await this.db.from("cast_replies").insert([{ cast_hash: cast.hash }]);
 
       return { success: true, data: castReply };
     } catch (err: any) {
