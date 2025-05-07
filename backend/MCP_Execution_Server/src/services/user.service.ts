@@ -70,6 +70,10 @@ export class UserService {
 
   async registerCast(fid: string, cast: any) {
     console.log("registering cast");
+    if (cast.parent_hash) {
+      console.log("This is a reply,skipping");
+      return { success: true, data: null };
+    }
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
       const { data: userData, error: userError } = await this.db
