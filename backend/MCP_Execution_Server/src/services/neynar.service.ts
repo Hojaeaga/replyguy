@@ -200,32 +200,19 @@ export class NeynarService {
 
     try {
       ipfsHash = await this.ipfsService.publishJSON(proof);
-      console.log("ipfsHash", ipfsHash);
     } catch (error) {
       console.error("publishJSON error", error);
     }
 
     try {
-
       await this.avs.sendTask(
         ipfsHash,
         proof.claimData.timestampS.toString(),
         0,
       );
-      console.log("Sent to AVS Network");
     } catch (err) {
       console.error("sendTask error", err);
     }
-
-    // try {
-    //   await axios.post("http://localhost:4002/task/validate", {
-    //     proofOfTask: ipfsHash,
-    //     data: proof.claimData.timestampS.toString(),
-    //     taskDefinitionId: 0
-    //   });
-    // } catch (err) {
-    //   console.error("validateTask error", err);
-    // }
 
     return simplifiedCasts;
   }
@@ -422,15 +409,118 @@ export class NeynarService {
       console.error("sendTask error", err);
     }
 
-    // try {
-    //   await axios.post("http://localhost:4002/task/validate", {
-    //     proofOfTask: ipfsHash,
-    //     data: proof.claimData.timestampS.toString(),
-    //     taskDefinitionId: 0
-    //   });
-    // } catch (err) {
-    //   console.error("validateTask error", err);
-    // }
+    return simplifiedCasts;
+  }
+
+  async fetchUserPopularCastsData(fid: string) {
+    const publicOptions = {
+      method: "GET", // or POST
+    };
+
+    const privateOptions = {
+      headers: {
+        "x-api-key": this.neynarApiKey,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const url = `https://api.neynar.com/v2/farcaster/feed/user/popular?fid=${fid}`;
+
+    let proof: any;
+
+    try {
+      proof = await this.reclaimClient.zkFetch(
+        url,
+        publicOptions,
+        privateOptions,
+      );
+    } catch (err) {
+      console.error("fetchUserPopularCasts error", err);
+      return null;
+    }
+
+    if (proof === undefined) {
+      return null;
+    }
+
+    const castData = JSON.parse(proof.extractedParameterValues.data);
+
+    const simplifiedCasts = castData.casts.map((cast: any) => ({
+      fid: cast.author.fid,
+      name: cast.author.username,
+      hash: cast.hash,
+      text: cast.text,
+      timestamp: cast.timestamp,
+      channel: cast.channel?.name || null,
+      embedUrls: cast.embeds?.map((e: any) => e.url) || [],
+      frame: cast.frames?.length
+        ? {
+          title: cast.frames[0].title,
+          buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
+        }
+        : null,
+      likes: cast.reactions?.likes_count || 0,
+      recasts: cast.reactions?.recasts_count || 0,
+    }));
+
+    return simplifiedCasts;
+  }
+
+  async fetchCastsForUserData(fid: string) {
+
+    const publicOptions = {
+      method: "GET", // or POST
+    };
+
+    const privateOptions = {
+      headers: {
+        "x-api-key": this.neynarApiKey,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const url = `https://api.neynar.com/v2/farcaster/feed/user/casts?fid=${fid}&limit=100`;
+
+    let proof: any;
+
+    try {
+      proof = await this.reclaimClient.zkFetch(
+        url,
+        publicOptions,
+        privateOptions,
+      );
+    } catch (err) {
+      console.error("fetchCastsForUser error", err);
+    }
+
+    if (proof === undefined) {
+      return null;
+    }
+
+    const castData = JSON.parse(proof.extractedParameterValues.data);
+
+    const simplifiedCasts = castData.casts.map((cast: any) => ({
+      author: cast.author.username,
+      fid: cast.author.fid,
+      hash: cast.hash,
+      text: cast.text,
+      timestamp: cast.timestamp,
+      channel: cast.channel?.name || null,
+      embedUrls: cast.embeds?.map((e: any) => e.url) || [],
+      frame: cast.frames?.length
+        ? {
+          title: cast.frames[0].title,
+          buttons: cast.frames[0].buttons?.map((b: any) => b.title) || [],
+        }
+        : null,
+      likes: cast.reactions?.likes_count || 0,
+      recasts: cast.reactions?.recasts_count || 0,
+      frames:
+        cast.frames?.map((f: any) => ({
+          title: f.title,
+          buttons: f.buttons?.map((b: any) => b.title) || [],
+        })) || [],
+    }));
 
     return simplifiedCasts;
   }
@@ -441,6 +531,19 @@ export class NeynarService {
       this.fetchUserPopularCasts(fid),
       this.fetchUserChannels(fid),
       this.fetchCastsForUser(fid),
+    ]);
+
+    return {
+      popularCasts,
+      channels,
+      casts,
+    };
+  }
+  async aggregateUserDataForBackend(fid: string) {
+    const [popularCasts, channels, casts] = await Promise.all([
+      this.fetchUserPopularCastsData(fid),
+      this.fetchUserChannels(fid),
+      this.fetchCastsForUserData(fid),
     ]);
 
     return {

@@ -52,6 +52,39 @@ export class UserService {
     }
   }
 
+  async registerUserDataForBackend(fid: string) {
+    try {
+      // check if the user is already registered
+      const { data: existingUser, error: existingUserError } = await this.db.from("user_embeddings").select("*").eq("fid", Number(fid)).maybeSingle();
+      if (existingUser) {
+        console.log("User already registered, skipping, fid:", fid);
+        return { success: true, data: existingUser };
+      }
+    } catch (error) {
+      console.error("registerUserDataForBackend error", error);
+    }
+
+    try {
+      const userData = await this.neynarService.aggregateUserDataForBackend(fid);
+      const summary = await this.aiService.summarizeUserContext(userData);
+      if (!summary) throw new Error("Summary generation failed");
+      const embeddings = await this.aiService.generateEmbeddings(summary);
+      if (!embeddings) throw new Error("Embedding generation failed");
+
+      const { error } = await this.db.from("user_embeddings").upsert({
+        fid,
+        summary,
+        embeddings,
+      });
+      console.log("Registered user data", fid);
+      if (error) throw error;
+      return { success: true, data: userData };
+    } catch (err: any) {
+      console.error("registerUser error", err);
+      return { success: false, error: err.message || err };
+    }
+  }
+
   async getUser(fid: string) {
     try {
       const { data, error } = await this.db
@@ -79,12 +112,12 @@ export class UserService {
 
     if (existingReply) {
       console.log("Cast already processed, skipping");
-      return { success: true, data: null };
+      return { success: true, data: "Cast already processed" };
     }
 
     if (cast.parent_hash) {
       console.log("This is a reply, skipping");
-      return { success: true, data: null };
+      return { success: true, data: "This is a reply, skipping" };
     }
 
     try {
@@ -169,7 +202,7 @@ export class UserService {
         ],
       });
 
-      console.log("Cast reply", castReply);
+      console.log("Cast replied");
 
       await this.db.from("cast_replies").insert([{ cast_hash: cast.hash }]);
 

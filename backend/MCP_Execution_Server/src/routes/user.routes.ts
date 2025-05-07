@@ -1,6 +1,7 @@
 // routes/user.routes.js
-import express, { Request, Response, Router, NextFunction } from "express";
-import { UserService } from "../services/user.service.js";
+import express from "express";
+import type { Request, Response, Router, NextFunction } from "express";
+import type { UserService } from "../services/user.service.js";
 
 export function userRouter(userService: UserService): Router {
   const router = express.Router();
@@ -37,13 +38,13 @@ export function userRouter(userService: UserService): Router {
       const cast = data;
       const userId = cast.author.fid; // You can look up your DB user via fid
 
-      try {
-        const result = await userService.registerCast(userId, cast);
-        res.status(200).json({ success: true, data: result });
-      } catch (error) {
-        console.error("Error in /register/cast:", error);
-        next(error);
-      }
+
+
+      userService.registerCast(userId, cast)
+        .catch(error => console.error("Background cast registration error:", error));
+
+      // Send immediate success response
+      res.status(200).json({ success: true });
     },
   );
   return router;
