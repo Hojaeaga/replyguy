@@ -125,12 +125,15 @@ export default function Home() {
       </section>
 
       {/* Screen 3 */}
-      <section ref={screen3Ref} className="min-h-screen px-6 bg-white">
+      <section
+        ref={screen3Ref}
+        className="min-h-screen px-6 bg-white flex flex-col items-center"
+      >
         <h2 className="text-[21px] font-bold mt-8 mb-8 text-center">
           We discovered the need and we shipped!
         </h2>
         <Carousel
-          className="mb-10"
+          className="p-4 w-[80%]"
           opts={{
             align: "start",
             loop: true,
@@ -146,13 +149,36 @@ export default function Home() {
                   height={300}
                   className="rounded-md border"
                 />
-                <p className="mt-4 text-sm text-gray-600 max-w-2xl mx-auto text-center">
+                <p className="mt-2 text-sm text-gray-600 max-w-2xl mx-auto text-center">
                   {item.text}
                 </p>
               </CarouselItem>
             ))}
           </CarouselContent>
+          <CarouselPrevious ref={prevRef} />
+          <CarouselNext ref={nextRef} />
         </Carousel>
+        <p className="mt-4 text-gray-600 text-xs max-w-md text-center font-semibold">
+          Looks fun to you ?
+        </p>
+        <p className="text-gray-600 text-xs max-w-md text-center font-semibold">
+          Subscribe to us now !
+        </p>
+        <div className="relative inline-block mt-6">
+          <button
+            onClick={buttonClicked}
+            className="px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
+          >
+            Subscribe now!
+          </button>
+          <Image
+            src="/curly_arrow.svg"
+            alt="Curly arrow"
+            width={40}
+            height={40}
+            className="absolute -bottom-8 -right-4"
+          />
+        </div>
       </section>
     </main>
   );
