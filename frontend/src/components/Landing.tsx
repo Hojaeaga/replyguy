@@ -171,13 +171,6 @@ export default function Home() {
           >
             Subscribe now!
           </button>
-          <Image
-            src="/curly_arrow.svg"
-            alt="Curly arrow"
-            width={40}
-            height={40}
-            className="absolute -bottom-8 -right-4"
-          />
         </div>
       </section>
     </main>
