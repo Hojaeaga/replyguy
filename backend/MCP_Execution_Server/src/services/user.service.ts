@@ -39,7 +39,7 @@ export class UserService {
 
   async registerUser(fid: string) {
     try {
-      const alreadySubsribed = await this.checkSubscribedUser(fid);
+      const alreadySubsribed = await this.checkSubscribedUser(Number(fid));
       if (alreadySubsribed.success && alreadySubsribed.subscribed) {
         return { success: true, data: "User already subscribed" };
       }

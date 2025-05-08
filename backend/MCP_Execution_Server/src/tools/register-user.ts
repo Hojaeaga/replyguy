@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { AxiosResponse } from "axios";
 import { UserService } from "../services/user.service.js";
 import { NeynarService } from "../services/neynar.service.js";
 import { AIService } from "../services/ai.service.js";
@@ -31,42 +32,82 @@ async function registerUser() {
     const ipfs = new IpfsService(config.pinata.apiKey, config.pinata.secretApiKey);
     const neynar = new NeynarService(config.neynar.apiKey, config.neynar.signerUuid, reclaim, avs, ipfs);
     const userService = new UserService(neynar, ai, db);
-    const channelId = "screens";
-    let result: any;
+    /**
+     * Channel Fetched
+     * Nomads
+     * Monad
+     * Screens
+     */
 
-    let members: { fid: number, memberAt: number }[] = [];
+    const channelId = "f1";
+
+    // Define the response type based on the Farcaster API docs
+    interface ChannelMember {
+        fid: number;
+        memberAt: number;
+    }
+
+    interface ChannelMembersResponse {
+        result: {
+            members: ChannelMember[];
+        };
+        next?: {
+            cursor: string;
+        };
+    }
+
+    let members: ChannelMember[] = [];
+
     try {
-        result = await axios.get(`https://api.warpcast.com/fc/channel-members?channelId=${channelId}`)
-    } catch (error) {
-        console.error("Error occurred:", error);
-    }
+        // First API call to get initial members
+        const initialResponse = await axios.get<ChannelMembersResponse>(
+            `https://api.warpcast.com/fc/channel-members?channelId=${channelId}`
+        );
 
-    if (result.data.next) {
-        let cursor = result.data.next.cursor;
-
-        while (cursor) {
-            result = await axios.get(`https://api.warpcast.com/fc/channel-members?channelId=${channelId}&cursor=${cursor}`)
-            members.push(...result.data.result.members);
-            if (result.data.next) {
-                cursor = result.data.next.cursor;
-            } else {
-                cursor = null;
-            }
+        // Add initial members to our array
+        if (initialResponse.data?.result?.members) {
+            members = [...initialResponse.data.result.members];
         }
-    } else {
-        members = result.data.result.members;
+
+        // Handle pagination if there's a next cursor
+        if (initialResponse.data?.next?.cursor) {
+            let cursor: string | undefined = initialResponse.data.next.cursor;
+
+            // Continue fetching pages while there's a cursor
+            while (cursor) {
+                const nextResponse: AxiosResponse<ChannelMembersResponse> = await axios.get<ChannelMembersResponse>(
+                    `https://api.warpcast.com/fc/channel-members?channelId=${channelId}&cursor=${cursor}`
+                );
+
+                if (nextResponse.data?.result?.members) {
+                    members.push(...nextResponse.data.result.members);
+                }
+
+                // Update cursor for next page or exit loop
+                cursor = nextResponse.data?.next?.cursor;
+            }
+        } else {
+            console.log("Only one page of results found");
+        }
+
+    } catch (error) {
+        console.error("Error occurred fetching channel members:", error);
+        return; // Exit early if we can't fetch the members
     }
 
-    const fids = members.map((member: { fid: number, memberAt: number }) => member.fid);
+    const fids = members.map((member: ChannelMember) => member.fid);
+    console.log(`Total number of users for ${channelId} to register: ${fids.length}`);
 
     for (const fid of fids) {
         try {
-            await userService.registerUserDataForBackend(fid.toString())
+            await userService.registerUserDataForBackend(fid.toString());
         } catch (error) {
-            console.error("Error occurred:", error);
+            console.error(`Error registering user with FID ${fid}:`, error);
         }
     }
+    console.log("Registered all users in the channel:", channelId);
 
+    return;
 }
 
 // Run the script
