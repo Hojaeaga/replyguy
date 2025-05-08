@@ -120,17 +120,6 @@ services:
     networks:
       p2p:
         ipv4_address: 10.8.0.101
-  ngrok:
-    image: ngrok/ngrok:latest
-    command:
-      - "http"
-      - "http://host.docker.internal:4003"
-      - "--url"
-      - "harmless-ibex-champion.ngrok-free.app"
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-    ports:
-      - 4040:4040
 
 networks:
   p2p:
