@@ -11,6 +11,7 @@ const iconUrl = `${appUrl}/logo_replyguy.png`;
 const framePreviewMetadata = {
   version: "next",
   imageUrl: `${appUrl}/opengraph.png`,
+  iconUrl,
   heroImageUrl: `${appUrl}/logo_replyguy.png`,
   button: {
     title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
@@ -41,5 +42,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Home() {
-  return (<App />);
+  return <App />;
 }
