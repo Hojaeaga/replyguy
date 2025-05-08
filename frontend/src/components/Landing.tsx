@@ -14,7 +14,7 @@ const carouselItems = [
   {
     src: "/validation1.svg",
     alt: "job posted on Farcaster",
-    text: "Job posted on Farcaster with just 100+ views, here’s when we help you reach the right audience!",
+    text: "Job posted on Farcaster with just 100+ views, here’s when we help organsations reach the right audience!",
   },
   {
     src: "/validation2.svg",
@@ -201,8 +201,7 @@ export default function Home() {
           )}
         </div>
         <p className="mt-4 text-gray-600 text-xs max-w-md text-center font-semibold">
-          If you are an organisation, reach out to us we have something special
-          for you!
+          If you are an organisation, reach out to us to run personalised ads
         </p>
       </section>
     </main>
