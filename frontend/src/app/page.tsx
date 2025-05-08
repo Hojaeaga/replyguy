@@ -5,12 +5,12 @@ const appUrl = process.env.NEXT_PUBLIC_URL;
 
 // frame preview metadata
 const appName = process.env.NEXT_PUBLIC_FRAME_NAME;
-const splashImageUrl = `${appUrl}/splash.png`;
-const iconUrl = `${appUrl}/icon.png`;
+const splashImageUrl = `${appUrl}/icon_replyguy.png`;
+const iconUrl = `${appUrl}/icon_replyguy.png`;
 
 const framePreviewMetadata = {
   version: "next",
-  imageUrl: `${appUrl}/opengraph-image`,
+  imageUrl: `${appUrl}/opengraph.svg`,
   button: {
     title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
     action: {
