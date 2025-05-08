@@ -23,14 +23,14 @@ export class UserService {
     try {
       const { data, error } = await this.db
         .from("user_embeddings")
-        .select("*")
+        .select("fid") // only select fid to minimize payload
         .eq("fid", fid)
+        .eq("is_subscribed", true)
         .maybeSingle();
+
       if (error) throw error;
-      if (data.is_subscribed) {
-        return { success: true, subscribed: true };
-      }
-      return { success: true, subscribed: false };
+
+      return { success: true, subscribed: !!data };
     } catch (err: any) {
       console.error("checkSubscribedUser error", err);
       return { success: false, error: err.message || err };
