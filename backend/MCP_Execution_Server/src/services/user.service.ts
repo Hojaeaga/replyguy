@@ -19,7 +19,7 @@ export class UserService {
       return { success: false, error: err.message || err };
     }
   }
-  async checkSubscribedUser(fid: string) {
+  async checkSubscribedUser(fid: number) {
     try {
       const { data, error } = await this.db
         .from("user_embeddings")

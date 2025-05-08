@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFrame } from "./providers/FrameProvider";
 import Image from "next/image";
 import {
@@ -25,11 +25,45 @@ export default function Home() {
   const { context } = useFrame();
   const screen2Ref = useRef<HTMLDivElement>(null);
   const screen3Ref = useRef<HTMLDivElement>(null);
-
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
-  const buttonClicked = async () => {
+  const checkUserAlreadySubscribed = async () => {
+    if (!context || !context.user.displayName) {
+      console.log("User not logged in");
+      return;
+    }
+
+    try {
+      const url = new URL(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register/user`,
+      );
+      url.searchParams.append("fid", context.user.fid.toString());
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        console.error(
+          "Registration check failed with status:",
+          response.status,
+        );
+        return;
+      }
+
+      const result = await response.json();
+      console.log("Registration check result:", result);
+      setIsSubscribed(result.subscribed);
+      console.log("Registration check successful:", result);
+    } catch (error) {
+      console.error("Error checking user registration:", error);
+    }
+  };
+
+  const subscribeUser = async () => {
     if (!context || !context.user.displayName) {
       console.log("User not logged in");
       return;
@@ -54,6 +88,10 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    if (!context) return;
+    checkUserAlreadySubscribed();
+  }, [context?.user?.fid]);
   return (
     <main className="font-sans bg-white text-gray-900 overflow-x-hidden">
       {/* Screen 1 */}
@@ -70,12 +108,18 @@ export default function Home() {
         <p className="mt-4 text-gray-600 max-w-md">
           Discover ideas, people, connections , and more on Farcaster.
         </p>
-        <button
-          onClick={buttonClicked}
-          className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
-        >
-          Count me in !
-        </button>
+        {!isSubscribed ? (
+          <button
+            onClick={subscribeUser}
+            className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
+          >
+            Count me in !
+          </button>
+        ) : (
+          <p className="mt-6 text-[14px] font-semibold text-green-600">
+            🎉 Thanks for subscribing!
+          </p>
+        )}
 
         <Image
           src="/illus.svg"
@@ -155,19 +199,30 @@ export default function Home() {
           <CarouselPrevious ref={prevRef} />
           <CarouselNext ref={nextRef} />
         </Carousel>
-        <p className="mt-4 text-gray-600 text-xs max-w-md text-center font-semibold">
-          Looks fun to you ?
-        </p>
-        <p className="text-gray-600 text-xs max-w-md text-center font-semibold">
-          Subscribe to us now !
-        </p>
+        {!isSubscribed && (
+          <>
+            <p className="mt-4 text-gray-600 text-xs max-w-md text-center font-semibold">
+              Looks fun to you ?
+            </p>
+            <p className="text-gray-600 text-xs max-w-md text-center font-semibold">
+              Subscribe to us now !
+            </p>
+          </>
+        )}
+
         <div className="relative inline-block mt-6">
-          <button
-            onClick={buttonClicked}
-            className="px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
-          >
-            Subscribe now!
-          </button>
+          {!isSubscribed ? (
+            <button
+              onClick={subscribeUser}
+              className="px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
+            >
+              Subscribe now!
+            </button>
+          ) : (
+            <p className="text-sm font-semibold text-green-600">
+              🎉 You&apos;re already subscribed!
+            </p>
+          )}
         </div>
       </section>
     </main>

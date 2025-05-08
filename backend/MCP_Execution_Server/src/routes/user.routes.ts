@@ -48,21 +48,21 @@ export function userRouter(userService: UserService): Router {
       res.status(200).json({ success: true });
     },
   );
-  router.post(
-    "/register/check",
+  router.get(
+    "/register/user",
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      const { fid } = req.body;
+      const { fid } = req.query;
 
-      if (!fid) {
-        res.status(400).json({ error: "Missing User FID" });
+      if (!fid || typeof fid !== "string") {
+        res.status(400).json({ error: "Missing or invalid User FID" });
         return;
       }
 
       try {
-        const result = await userService.checkSubscribedUser(fid);
+        const result = await userService.checkSubscribedUser(Number(fid));
         res.status(200).json({ result });
       } catch (error) {
-        console.error("Error in /register/check:", error);
+        console.error("Error in /fetch/user:", error);
         next(error);
       }
     },
