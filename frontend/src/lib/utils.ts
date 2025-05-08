@@ -95,9 +95,9 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
     accountAssociation = {
       header:
         "eyJmaWQiOjQzNTQ2NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDNkOTdiMDk2MDU2NzM0NTdiMjVCZWI0QjEyOTAxY0NDZEMwMUNFMWIifQ",
-      payload: "eyJkb21haW4iOiJ5b3VyLXJlcGx5LWd1eS52ZXJjZWwuYXBwIn0",
+      payload: "eyJkb21haW4iOiJyZXBseWd1eS5tZWdhYnl0ZTB4Lnh5eiJ9",
       signature:
-        "MHhiYTkxZDZmZmQxNzgzOGIwMzkxODEwNWM2OWE4MjVhOTE5ZmI0M2Y0MjJjN2QyYWQ4MzAwNDQ0ZWZiODU5MDQyM2YyOWQ2YWZlZDY3ZTY1ZWU3MmFhZGExMDUwOGM4NjVmOWYzZjM0YWM2MzRmMWZjODFiMDJlZGU1N2VlOTVkNDFi",
+        "MHhjN2Q3NGNhNWJkNDk2ZWUwMDE3YThlNjkxYTA1MjhjZmI3MzI0NDIwMzAxMzc3MjAyNjRhZDNkZjAzZTU4MGY4NWJkYTQ2NThkOTg5N2Q3OTJjODQyMTdlZWE2ZmI0ODUyNjI5MzlkOTEwYmFmMzZkYzM0Y2ZlODljNWZhZjZlNjFi",
     };
   }
 
