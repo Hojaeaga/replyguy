@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useFrame } from "./providers/FrameProvider";
 import Image from "next/image";
 import {
@@ -9,6 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../components/ui/carousel";
+import { toast } from "sonner";
 const carouselItems = [
   {
     src: "/validation1.svg",
@@ -27,6 +28,7 @@ export default function Home() {
   const screen3Ref = useRef<HTMLDivElement>(null);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
+  const [loading, setLoading] = useState(false);
   const isSubscribed = localStorage.getItem("isSubscribed") === "true";
   const subscribeUser = async () => {
     if (!context || !context.user.displayName) {
@@ -34,6 +36,7 @@ export default function Home() {
       return;
     }
     try {
+      setLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register/user`,
         {
@@ -49,6 +52,8 @@ export default function Home() {
       const result = await response.json();
       localStorage.setItem("isSubscribed", "true");
       console.log("Registration successful:", result);
+      toast.success("Thanks for subscribing!");
+      setLoading(false);
     } catch (error) {
       console.error("Error registering user:", error);
     }
@@ -58,6 +63,13 @@ export default function Home() {
     <main className="font-sans bg-white text-gray-900 overflow-x-hidden">
       {/* Screen 1 */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
+        <Image
+          src="/logo.svg"
+          alt="Logo"
+          width={60}
+          height={60}
+          className="absolute top-5 left-[43%]"
+        />
         <p className="text-base text-gray-500 mb-2">
           GM, {context?.user?.displayName || "there"}!
         </p>
@@ -73,9 +85,10 @@ export default function Home() {
         {!isSubscribed ? (
           <button
             onClick={subscribeUser}
+            disabled={loading}
             className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
           >
-            Count me in !
+            {loading ? "Loading..." : "Count me in !"}
           </button>
         ) : (
           <p className="mt-6 text-[14px] font-semibold text-green-600">
@@ -176,9 +189,10 @@ export default function Home() {
           {!isSubscribed ? (
             <button
               onClick={subscribeUser}
+              disabled={loading}
               className="px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
             >
-              Subscribe now!
+              {loading ? "Loading..." : "Subscribe now!"}
             </button>
           ) : (
             <p className="text-sm font-semibold text-green-600">
