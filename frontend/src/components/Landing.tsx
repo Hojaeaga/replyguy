@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useFrame } from "./providers/FrameProvider";
 import Image from "next/image";
 import {
@@ -25,44 +25,9 @@ export default function Home() {
   const { context } = useFrame();
   const screen2Ref = useRef<HTMLDivElement>(null);
   const screen3Ref = useRef<HTMLDivElement>(null);
-  const [isSubscribed, setIsSubscribed] = useState(false);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
-
-  const checkUserAlreadySubscribed = async () => {
-    if (!context || !context.user.displayName) {
-      console.log("User not logged in");
-      return;
-    }
-
-    try {
-      const url = new URL(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register/user`,
-      );
-      url.searchParams.append("fid", context.user.fid.toString());
-
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        console.error(
-          "Registration check failed with status:",
-          response.status,
-        );
-        return;
-      }
-
-      const result = await response.json();
-      console.log("Registration check result:", result);
-      setIsSubscribed(result.subscribed);
-      console.log("Registration check successful:", result);
-    } catch (error) {
-      console.error("Error checking user registration:", error);
-    }
-  };
-
+  const isSubscribed = localStorage.getItem("isSubscribed") === "true";
   const subscribeUser = async () => {
     if (!context || !context.user.displayName) {
       console.log("User not logged in");
@@ -82,16 +47,13 @@ export default function Home() {
         return;
       }
       const result = await response.json();
+      localStorage.setItem("isSubscribed", "true");
       console.log("Registration successful:", result);
     } catch (error) {
       console.error("Error registering user:", error);
     }
   };
 
-  useEffect(() => {
-    if (!context) return;
-    checkUserAlreadySubscribed();
-  }, [context?.user?.fid]);
   return (
     <main className="font-sans bg-white text-gray-900 overflow-x-hidden">
       {/* Screen 1 */}

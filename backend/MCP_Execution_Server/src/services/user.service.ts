@@ -57,6 +57,7 @@ export class UserService {
         fid,
         summary,
         embeddings,
+        is_subscribed: true,
       });
       if (error) throw error;
 
