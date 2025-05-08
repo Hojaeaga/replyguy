@@ -11,6 +11,7 @@ const iconUrl = `${appUrl}/logo_replyguy.png`;
 const framePreviewMetadata = {
   version: "next",
   imageUrl: `${appUrl}/opengraph.png`,
+  heroImageUrl: `${appUrl}/logo_replyguy.png`,
   button: {
     title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
     action: {

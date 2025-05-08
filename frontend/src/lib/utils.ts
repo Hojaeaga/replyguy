@@ -115,6 +115,8 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
       version: "1",
       name: process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo",
       iconUrl: `${appUrl}/icon.png`,
+      // @ts-expect-error sffds
+      heroImageUrl: `${appUrl}/logo_replyguy.png`,
       homeUrl: appUrl,
       imageUrl: `${appUrl}/opengraph-image`,
       buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
