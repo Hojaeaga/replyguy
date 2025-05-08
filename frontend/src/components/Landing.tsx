@@ -28,9 +28,6 @@ export default function Home() {
 
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
-  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
-    ref.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   const buttonClicked = async () => {
     if (!context || !context.user.displayName) {

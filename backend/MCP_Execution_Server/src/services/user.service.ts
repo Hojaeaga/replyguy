@@ -19,9 +19,30 @@ export class UserService {
       return { success: false, error: err.message || err };
     }
   }
+  async checkSubscribedUser(fid: string) {
+    try {
+      const { data, error } = await this.db
+        .from("user_embeddings")
+        .select("*")
+        .eq("fid", fid)
+        .maybeSingle();
+      if (error) throw error;
+      if (data.is_subscribed) {
+        return { success: true, subscribed: true };
+      }
+      return { success: true, subscribed: false };
+    } catch (err: any) {
+      console.error("checkSubscribedUser error", err);
+      return { success: false, error: err.message || err };
+    }
+  }
 
   async registerUser(fid: string) {
     try {
+      const alreadySubsribed = await this.checkSubscribedUser(fid);
+      if (alreadySubsribed.success && alreadySubsribed.subscribed) {
+        return { success: true, data: "User already subscribed" };
+      }
       const alreadySubscribedUserIds =
         await this.neynarService.fetchSubscribedUsers();
       const userData = await this.neynarService.aggregateUserData(fid);
@@ -55,7 +76,11 @@ export class UserService {
   async registerUserDataForBackend(fid: string) {
     try {
       // check if the user is already registered
-      const { data: existingUser, error: existingUserError } = await this.db.from("user_embeddings").select("*").eq("fid", Number(fid)).maybeSingle();
+      const { data: existingUser, error: existingUserError } = await this.db
+        .from("user_embeddings")
+        .select("*")
+        .eq("fid", Number(fid))
+        .maybeSingle();
       if (existingUser) {
         console.log("User already registered, skipping, fid:", fid);
         return { success: true, data: existingUser };
@@ -65,7 +90,8 @@ export class UserService {
     }
 
     try {
-      const userData = await this.neynarService.aggregateUserDataForBackend(fid);
+      const userData =
+        await this.neynarService.aggregateUserDataForBackend(fid);
       const summary = await this.aiService.summarizeUserContext(userData);
       if (!summary) throw new Error("Summary generation failed");
       const embeddings = await this.aiService.generateEmbeddings(summary);
