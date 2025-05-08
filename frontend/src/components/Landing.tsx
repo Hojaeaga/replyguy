@@ -200,6 +200,10 @@ export default function Home() {
             </p>
           )}
         </div>
+        <p className="mt-4 text-gray-600 text-xs max-w-md text-center font-semibold">
+          If you are an organisation, reach out to us we have something special
+          for you!
+        </p>
       </section>
     </main>
   );
