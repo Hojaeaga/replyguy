@@ -3,20 +3,17 @@ import type { AxiosResponse } from "axios";
 import { UserService } from "../services/user.service.js";
 import { NeynarService } from "../services/neynar.service.js";
 import { AIService } from "../services/ai.service.js";
-import { createClient } from "@supabase/supabase-js";
 import { config } from "../config.js";
 import { AVSService } from "../services/avs.service.js";
 import { IpfsService } from "../services/ipfs.service.js";
 import { ReclaimClient } from "@reclaimprotocol/zk-fetch";
+import { DBService } from "../services/db.service.js";
 
 /**
  * CLI tool to register a user's data by FID
  */
 async function registerUser() {
-    const db = createClient(
-        config.supabase.SUPABASE_URL as string,
-        config.supabase.SUPABASE_ANON_KEY as string,
-    );
+    const db = new DBService(config.supabase.SUPABASE_URL, config.supabase.SUPABASE_ANON_KEY);
 
     const reclaim = new ReclaimClient(
         config.reclaim.appId,

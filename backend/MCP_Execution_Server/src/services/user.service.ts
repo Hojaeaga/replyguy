@@ -1,6 +1,6 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { NeynarService } from "./neynar.service.js";
 import type { AIService } from "./ai.service.js";
+import type { DBService } from "./db.service.js";
 
 export enum FID_STATUS {
   NOT_EXIST = "NOT_EXIST",
@@ -12,13 +12,13 @@ export class UserService {
   constructor(
     private neynarService: NeynarService,
     private aiService: AIService,
-    private db: SupabaseClient,
+    private db: DBService,
   ) { }
 
   async fetchAllUsers() {
     try {
-      const { data, error } = await this.db.from("user_embeddings").select("*");
-      if (error) throw error;
+      const { success, data } = await this.db.fetchAllFIDs();
+      if (!success) throw new Error("Failed to fetch all users");
       return { success: true, data };
     } catch (err: any) {
       console.error("fetchAllUsers error", err);
@@ -28,16 +28,11 @@ export class UserService {
 
   async checkSubscribedUser(fid: number) {
     try {
-      const { data, error } = await this.db
-        .from("user_embeddings")
-        .select("fid") // only select fid to minimize payload
-        .eq("fid", fid)
-        .eq("is_subscribed", true)
-        .maybeSingle();
+      const { success, subscribed } = await this.db.isSubscribed(fid);
 
-      if (error) throw error;
+      if (!success) throw new Error("Failed to check subscribed user");
 
-      return { success: true, subscribed: !!data };
+      return { success: true, subscribed: subscribed };
     } catch (err: any) {
       console.error("checkSubscribedUser error", err);
       return { success: false, error: err.message || err };
@@ -46,13 +41,9 @@ export class UserService {
 
   async checkFIDStatus(fid: number): Promise<{ success: boolean; status?: FID_STATUS; error?: string }> {
     try {
-      const { data, error } = await this.db
-        .from("user_embeddings")
-        .select("fid, is_subscribed")
-        .eq("fid", fid)
-        .maybeSingle();
+      const { success, data } = await this.db.checkFIDStatus(fid);
 
-      if (error) throw error;
+      if (!success) throw new Error("Failed to check FID status");
 
       if (!data) {
         return { success: true, status: FID_STATUS.NOT_EXIST };
@@ -69,8 +60,12 @@ export class UserService {
 
   async registerUser(fid: string) {
     try {
-      const alreadySubscribedUserIds =
-        await this.neynarService.fetchSubscribedUsers();
+
+      const { success, data: alreadySubscribedFIDs } = await this.db.fetchSubscribedFIDs();
+      if (!success) throw new Error("Failed to fetch subscribed FIDs");
+      console.log("alreadySubscribedFIDs", alreadySubscribedFIDs);
+
+
       const alreadySubsribed = await this.checkFIDStatus(Number(fid));
       if (alreadySubsribed.success) {
 
@@ -79,30 +74,25 @@ export class UserService {
         }
 
         if (alreadySubsribed.status === FID_STATUS.EXIST) {
-          const newSubscribedUserIds = [...alreadySubscribedUserIds, fid];
+          const newSubscribedUserIds = [...alreadySubscribedFIDs, fid];
           await this.neynarService.updateWebhook({
             updatedFids: newSubscribedUserIds,
           });
+          const { success } = await this.db.onlySubscribeFID(fid);
+          if (!success) throw new Error("User subscription failed");
           return { success: true, data: `User ${fid} subscribed` };
         }
 
         const userData = await this.neynarService.aggregateUserData(fid);
         const summary = await this.aiService.summarizeUserContext(userData);
-        console.log("Summary", summary);
         if (!summary) throw new Error("Summary generation failed");
         const embeddings = await this.aiService.generateEmbeddings(summary);
-        console.log("Embeddings", embeddings);
         if (!embeddings) throw new Error("Embedding generation failed");
 
-        const { error } = await this.db.from("user_embeddings").upsert({
-          fid,
-          summary,
-          embeddings,
-          is_subscribed: true,
-        });
-        if (error) throw error;
+        const { success } = await this.db.registerAndSubscribeFID(fid, summary, embeddings);
+        if (!success) throw new Error("User registration failed");
 
-        const newSubscribedUserIds = [...alreadySubscribedUserIds, fid];
+        const newSubscribedUserIds = [...alreadySubscribedFIDs, fid];
         await this.neynarService.updateWebhook({
           updatedFids: newSubscribedUserIds,
         });
@@ -119,14 +109,10 @@ export class UserService {
   async registerUserDataForBackend(fid: string) {
     try {
       // check if the user is already registered
-      const { data: existingUser, error: existingUserError } = await this.db
-        .from("user_embeddings")
-        .select("*")
-        .eq("fid", Number(fid))
-        .maybeSingle();
-      if (existingUser) {
+      const { success, registered } = await this.db.isRegistered(Number(fid));
+      if (success && registered) {
         console.log("User already registered, skipping, fid:", fid);
-        return { success: true, data: existingUser };
+        return { success: true, data: registered };
       }
     } catch (error) {
       console.error("registerUserDataForBackend error", error);
@@ -140,13 +126,9 @@ export class UserService {
       const embeddings = await this.aiService.generateEmbeddings(summary);
       if (!embeddings) throw new Error("Embedding generation failed");
 
-      const { error } = await this.db.from("user_embeddings").upsert({
-        fid,
-        summary,
-        embeddings,
-      });
+      const { success } = await this.db.onlyRegisterFID(fid, summary, embeddings);
       console.log("Registered user data", fid);
-      if (error) throw error;
+      if (!success) throw new Error("User registration failed");
       return { success: true, data: userData };
     } catch (err: any) {
       console.error("registerUser error", err);
@@ -156,12 +138,9 @@ export class UserService {
 
   async getUser(fid: string) {
     try {
-      const { data, error } = await this.db
-        .from("user_embeddings")
-        .select("*")
-        .eq("fid", fid);
+      const { success, data } = await this.db.getUser(Number(fid));
 
-      if (error) throw error;
+      if (!success || !data) throw new Error("Failed to get user");
 
       return { success: true, data: data[0] };
     } catch (err: any) {
@@ -173,11 +152,7 @@ export class UserService {
   async registerCast(fid: string, cast: any) {
     console.log("registering cast");
 
-    const { data: existingReply } = await this.db
-      .from("cast_replies")
-      .select("cast_hash")
-      .eq("cast_hash", cast.hash)
-      .maybeSingle();
+    const { data: existingReply } = await this.db.isCastReplyExists(cast.hash);
 
     if (existingReply) {
       console.log("Cast already processed, skipping");
@@ -191,13 +166,9 @@ export class UserService {
 
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
-      const { data: userData, error: userError } = await this.db
-        .from("user_embeddings")
-        .select("*")
-        .eq("fid", fid)
-        .single();
+      const { success, registered } = await this.db.isRegistered(Number(fid));
 
-      if (userError || !userData) {
+      if (!success || !registered) {
         throw new Error(`User with fid ${fid} not found`);
       }
 
@@ -209,14 +180,7 @@ export class UserService {
         throw new Error("Embedding generation failed for the cast text");
       }
 
-      const { data: similarUsers, error: similarityError } = await this.db.rpc(
-        "match_users_by_embedding",
-        {
-          query_embedding: castEmbeddings,
-          match_threshold: 0.4,
-          match_count: 3,
-        },
-      );
+      const { data: similarUsers, error: similarityError } = await this.db.fetchSimilarFIDs(castEmbeddings, 0.4, 3);
       console.log("Similar users", similarUsers);
       if (similarityError || !similarUsers) {
         throw new Error("Error finding similar users");
@@ -273,7 +237,7 @@ export class UserService {
 
       console.log("Cast replied");
 
-      await this.db.from("cast_replies").insert([{ cast_hash: cast.hash }]);
+      await this.db.addCastReply(cast.hash);
 
       return { success: true, data: castReply };
     } catch (err: any) {
