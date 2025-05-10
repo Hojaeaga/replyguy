@@ -25,23 +25,24 @@ export class UserService {
       return { success: false, error: err.message || err };
     }
   }
-  // async checkSubscribedUser(fid: number) {
-  //   try {
-  //     const { data, error } = await this.db
-  //       .from("user_embeddings")
-  //       .select("fid") // only select fid to minimize payload
-  //       .eq("fid", fid)
-  //       .eq("is_subscribed", true)
-  //       .maybeSingle();
 
-  //     if (error) throw error;
+  async checkSubscribedUser(fid: number) {
+    try {
+      const { data, error } = await this.db
+        .from("user_embeddings")
+        .select("fid") // only select fid to minimize payload
+        .eq("fid", fid)
+        .eq("is_subscribed", true)
+        .maybeSingle();
 
-  //     return { success: true, subscribed: !!data };
-  //   } catch (err: any) {
-  //     console.error("checkSubscribedUser error", err);
-  //     return { success: false, error: err.message || err };
-  //   }
-  // }
+      if (error) throw error;
+
+      return { success: true, subscribed: !!data };
+    } catch (err: any) {
+      console.error("checkSubscribedUser error", err);
+      return { success: false, error: err.message || err };
+    }
+  }
 
   async checkFIDStatus(fid: number): Promise<{ success: boolean; status?: FID_STATUS; error?: string }> {
     try {
