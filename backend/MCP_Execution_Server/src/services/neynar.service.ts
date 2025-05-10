@@ -35,7 +35,6 @@ export class NeynarService {
 
       let authorFids =
         targetWebhook.subscription?.filters["cast.created"]?.author_fids;
-      console.log("authorFids", authorFids);
       if (!authorFids) {
         authorFids = [];
       }

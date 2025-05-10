@@ -9,15 +9,13 @@ import { AIService } from "./services/ai.service.js";
 import { UserService } from "./services/user.service.js";
 import { AVSService } from "./services/avs.service.js";
 import { IpfsService } from "./services/ipfs.service.js";
+import { DBService } from "./services/db.service.js";
 
 /**
  * Main application entry point
  */
 async function main() {
-  const db = createClient(
-    config.supabase.SUPABASE_URL as string,
-    config.supabase.SUPABASE_ANON_KEY as string,
-  );
+  const db = new DBService(config.supabase.SUPABASE_URL, config.supabase.SUPABASE_ANON_KEY);
 
   const reclaim = new ReclaimClient(
     config.reclaim.appId,
