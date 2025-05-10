@@ -15,5 +15,8 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+# Build the TypeScript code
+RUN npm run build
+
 EXPOSE 8080
 CMD [ "node", "build/index.js" ]

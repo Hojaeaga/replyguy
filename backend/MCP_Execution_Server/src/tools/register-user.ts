@@ -38,9 +38,11 @@ async function registerUser() {
      * books
      * ai
      * creators
+     * crypto
+     * geopolitics
      */
 
-    const channelId = "crypto";
+    const channelId = "fitness";
 
     // Define the response type based on the Farcaster API docs
     interface ChannelMember {
