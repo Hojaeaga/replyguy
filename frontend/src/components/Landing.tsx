@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame } from "./providers/FrameProvider";
 import Image from "next/image";
 import {
@@ -10,6 +10,15 @@ import {
   CarouselPrevious,
 } from "../components/ui/carousel";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "wagmi/query";
+
+type UserSubscriptionResponse = {
+  result: {
+    subscribed: boolean;
+  };
+};
+
 const carouselItems = [
   {
     src: "/validation1.svg",
@@ -22,41 +31,89 @@ const carouselItems = [
     text: "Connect with people meeting at events, by finding through their casts.",
   },
 ];
+
+const fetchUserSubscription = async (
+  fid: number,
+): Promise<UserSubscriptionResponse> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register/user?fid=${fid}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Registration failed");
+  }
+
+  return response.json();
+};
+
+const registerUser = async (fid: number) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register/user`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fid }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Registration failed");
+  }
+
+  return response.json();
+};
+
 export default function Home() {
   const { context } = useFrame();
   const screen2Ref = useRef<HTMLDivElement>(null);
   const screen3Ref = useRef<HTMLDivElement>(null);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
-  const [loading, setLoading] = useState(false);
-  const isSubscribed = localStorage.getItem("isSubscribed") === "true";
-  const subscribeUser = async () => {
-    if (!context || !context.user.displayName) {
+
+  const fetchUserQuery = useQuery<
+    UserSubscriptionResponse, // TQueryFnData
+    Error, // TError
+    UserSubscriptionResponse, // TData (same as raw here)
+    [string, number | undefined] // TQueryKey
+  >({
+    queryKey: ["userSubscription", context?.user?.fid],
+    queryFn: () => {
+      if (!context?.user?.fid) {
+        return Promise.resolve({ result: { subscribed: false } });
+      }
+      return fetchUserSubscription(context.user.fid);
+    },
+  });
+
+  const isSubscribed = useMemo(() => {
+    if (!fetchUserQuery.data) return false;
+    return fetchUserQuery.data?.result.subscribed;
+  }, [fetchUserQuery.data]);
+
+  const mutation = useMutation({
+    mutationFn: registerUser,
+    onSuccess: (data) => {
+      toast.success("Thanks for subscribing!");
+      console.log("Registration successful:", data);
+    },
+    onError: (error) => {
+      console.error("Error registering user:", error);
+      toast.error(error.message || "Registration failed");
+    },
+  });
+
+  const handleSubscribe = () => {
+    if (!context || !context.user?.displayName) {
       console.log("User not logged in");
       return;
     }
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register/user`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fid: context.user.fid }),
-        },
-      );
-      if (!response.ok) {
-        console.error("Registration failed with status:", response.status);
-        return;
-      }
-      const result = await response.json();
-      localStorage.setItem("isSubscribed", "true");
-      console.log("Registration successful:", result);
-      toast.success("Thanks for subscribing!");
-      setLoading(false);
-    } catch (error) {
-      console.error("Error registering user:", error);
-    }
+    mutation.mutate(context.user.fid);
   };
 
   return (
@@ -84,11 +141,11 @@ export default function Home() {
         </p>
         {!isSubscribed ? (
           <button
-            onClick={subscribeUser}
-            disabled={loading}
+            onClick={handleSubscribe}
+            disabled={mutation.isPending}
             className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
           >
-            {loading ? "Loading..." : "Count me in !"}
+            {mutation.isPending ? "Loading..." : "Count me in !"}
           </button>
         ) : (
           <p className="mt-6 text-[14px] font-semibold text-green-600">
@@ -188,11 +245,11 @@ export default function Home() {
         <div className="relative inline-block mt-6">
           {!isSubscribed ? (
             <button
-              onClick={subscribeUser}
-              disabled={loading}
-              className="px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
+              onClick={handleSubscribe}
+              disabled={mutation.isPending}
+              className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
             >
-              {loading ? "Loading..." : "Subscribe now!"}
+              {mutation.isPending ? "Loading..." : "Count me in !"}
             </button>
           ) : (
             <p className="text-sm font-semibold text-green-600">
