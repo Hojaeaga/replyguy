@@ -19,6 +19,11 @@ type UserSubscriptionResponse = {
   };
 };
 
+const textToShare = `
+hey, checkout @yourreplyguy 👀
+
+It helps to connect with and find revelant people as per your cast!
+`;
 const carouselItems = [
   {
     src: "/validation1.svg",
@@ -112,12 +117,12 @@ export default function Home() {
   const handleComposeMutation = useMutation({
     mutationFn: async () => {
       const result = await sdk.actions.composeCast({
-        text: "Hey checkout this yourReplyGuy that helps you find the right people to connect with!",
+        text: textToShare,
         embeds: ["https://replyguy.megabyte0x.xyz"],
       });
       return result;
     },
-    onSuccess: async (data) => {
+    onSuccess: async () => {
       toast.success("Thanks for sharing!");
     },
     onError: (error) => {
