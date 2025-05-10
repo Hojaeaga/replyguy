@@ -2,6 +2,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { NeynarService } from "./neynar.service.js";
 import type { AIService } from "./ai.service.js";
 
+export enum FID_STATUS {
+  NOT_EXIST = "NOT_EXIST",
+  EXIST = "EXIST",
+  SUBSCRIBED = "SUBSCRIBED",
+}
+
 export class UserService {
   constructor(
     private neynarService: NeynarService,
@@ -19,6 +25,7 @@ export class UserService {
       return { success: false, error: err.message || err };
     }
   }
+
   async checkSubscribedUser(fid: number) {
     try {
       const { data, error } = await this.db
@@ -37,37 +44,72 @@ export class UserService {
     }
   }
 
-  async registerUser(fid: string) {
+  async checkFIDStatus(fid: number): Promise<{ success: boolean; status?: FID_STATUS; error?: string }> {
     try {
-      const alreadySubsribed = await this.checkSubscribedUser(Number(fid));
-      if (alreadySubsribed.success && alreadySubsribed.subscribed) {
-        return { success: true, data: "User already subscribed" };
-      }
-      const alreadySubscribedUserIds =
-        await this.neynarService.fetchSubscribedUsers();
-      const userData = await this.neynarService.aggregateUserData(fid);
-      const summary = await this.aiService.summarizeUserContext(userData);
-      console.log("Summary", summary);
-      if (!summary) throw new Error("Summary generation failed");
-      const embeddings = await this.aiService.generateEmbeddings(summary);
-      console.log("Embeddings", embeddings);
-      if (!embeddings) throw new Error("Embedding generation failed");
+      const { data, error } = await this.db
+        .from("user_embeddings")
+        .select("fid, is_subscribed")
+        .eq("fid", fid)
+        .maybeSingle();
 
-      const { error } = await this.db.from("user_embeddings").upsert({
-        fid,
-        summary,
-        embeddings,
-        is_subscribed: true,
-      });
       if (error) throw error;
 
-      if (!alreadySubscribedUserIds?.includes(fid)) {
+      if (!data) {
+        return { success: true, status: FID_STATUS.NOT_EXIST };
+      }
+      if (data.is_subscribed) {
+        return { success: true, status: FID_STATUS.SUBSCRIBED };
+      }
+      return { success: true, status: FID_STATUS.EXIST };
+    } catch (err: unknown) {
+      console.error("checkFIDStatus error", err);
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  async registerUser(fid: string) {
+    try {
+      const alreadySubscribedUserIds =
+        await this.neynarService.fetchSubscribedUsers();
+      const alreadySubsribed = await this.checkFIDStatus(Number(fid));
+      if (alreadySubsribed.success) {
+
+        if (alreadySubsribed.status === FID_STATUS.SUBSCRIBED) {
+          return { success: true, data: `User ${fid} already subscribed` };
+        }
+
+        if (alreadySubsribed.status === FID_STATUS.EXIST) {
+          const newSubscribedUserIds = [...alreadySubscribedUserIds, fid];
+          await this.neynarService.updateWebhook({
+            updatedFids: newSubscribedUserIds,
+          });
+          return { success: true, data: `User ${fid} subscribed` };
+        }
+
+        const userData = await this.neynarService.aggregateUserData(fid);
+        const summary = await this.aiService.summarizeUserContext(userData);
+        console.log("Summary", summary);
+        if (!summary) throw new Error("Summary generation failed");
+        const embeddings = await this.aiService.generateEmbeddings(summary);
+        console.log("Embeddings", embeddings);
+        if (!embeddings) throw new Error("Embedding generation failed");
+
+        const { error } = await this.db.from("user_embeddings").upsert({
+          fid,
+          summary,
+          embeddings,
+          is_subscribed: true,
+        });
+        if (error) throw error;
+
         const newSubscribedUserIds = [...alreadySubscribedUserIds, fid];
         await this.neynarService.updateWebhook({
           updatedFids: newSubscribedUserIds,
         });
+        return { success: true, data: `User ${fid} subscribed` };
       }
-      return { success: true, data: userData };
+
+      return { success: false, error: "User not found" };
     } catch (err: any) {
       console.error("registerUser error", err);
       return { success: false, error: err.message || err };
