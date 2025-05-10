@@ -12,7 +12,7 @@ import {
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useQuery } from "wagmi/query";
-
+import { sdk } from "@farcaster/frame-sdk";
 type UserSubscriptionResponse = {
   result: {
     subscribed: boolean;
@@ -98,13 +98,30 @@ export default function Home() {
 
   const mutation = useMutation({
     mutationFn: registerUser,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success("Thanks for subscribing!");
+      await sdk.actions.addFrame();
       console.log("Registration successful:", data);
     },
     onError: (error) => {
       console.error("Error registering user:", error);
       toast.error(error.message || "Registration failed");
+    },
+  });
+
+  const handleComposeMutation = useMutation({
+    mutationFn: async () => {
+      const result = await sdk.actions.composeCast({
+        text: "Hey checkout this yourReplyGuy that helps you find the right people to connect with!",
+        embeds: ["https://replyguy.megabyte0x.xyz"],
+      });
+      return result;
+    },
+    onSuccess: async (data) => {
+      toast.success("Thanks for sharing!");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Sharing failed");
     },
   });
 
@@ -148,9 +165,18 @@ export default function Home() {
             {mutation.isPending ? "Loading..." : "Count me in !"}
           </button>
         ) : (
-          <p className="mt-6 text-[14px] font-semibold text-green-600">
-            🎉 Thanks for subscribing!
-          </p>
+          <>
+            <p className="text-sm font-semibold text-green-600">
+              🎉 You&apos;re already subscribed!
+            </p>
+            <button
+              onClick={() => handleComposeMutation.mutate()}
+              disabled={handleComposeMutation.isPending}
+              className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
+            >
+              Share with your friends!
+            </button>
+          </>
         )}
 
         <Image
@@ -252,9 +278,18 @@ export default function Home() {
               {mutation.isPending ? "Loading..." : "Count me in !"}
             </button>
           ) : (
-            <p className="text-sm font-semibold text-green-600">
-              🎉 You&apos;re already subscribed!
-            </p>
+            <>
+              <p className="text-sm font-semibold text-green-600">
+                🎉 You&apos;re already subscribed!
+              </p>
+              <button
+                onClick={() => handleComposeMutation.mutate()}
+                disabled={handleComposeMutation.isPending}
+                className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
+              >
+                Share with your friends!
+              </button>
+            </>
           )}
         </div>
         <p className="mt-4 text-gray-600 text-xs max-w-md text-center font-semibold">
