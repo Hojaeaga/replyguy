@@ -67,5 +67,25 @@ export function userRouter(userService: UserService): Router {
       }
     },
   );
+
+  router.post(
+    "/unsubscribe/user",
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const { fid } = req.body;
+
+      if (!fid) {
+        res.status(400).json({ error: "Missing User FID" });
+        return;
+      }
+
+      try {
+        const result = await userService.unsubscribeUser(fid);
+        res.status(200).json({ success: true, data: result });
+      } catch (error) {
+        console.error("Error in /unsubscribe/user:", error);
+        next(error);
+      }
+    },
+  );
   return router;
 }
