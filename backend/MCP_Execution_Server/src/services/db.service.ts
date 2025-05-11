@@ -11,6 +11,17 @@ export class DBService {
         );
     }
 
+    async fetchSubscriberCount() {
+        try {
+            const { data, error } = await this.supabase.from("user_embeddings").select("fid").eq("is_subscribed", true);
+            if (error) throw error;
+            return { success: true, data: data.length };
+        } catch (err: any) {
+            console.error("fetchSubscriberCount error", err);
+            return { success: false, error: err.message || err, data: 0 };
+        }
+    }
+
     async getUser(fid: number) {
         try {
             const { data, error } = await this.supabase.from("user_embeddings").select("*").eq("fid", fid);

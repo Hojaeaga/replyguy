@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { userRouter } from "../routes/user.routes.js";
-
+import { appRouter } from "../routes/app.routes.js"
 /**
  * Main Execution server class
  */
@@ -26,7 +26,7 @@ export class ExecutionServer {
 
     // Mount REST routes
     this.app.use("/api", userRouter(this.services.user));
-
+    this.app.use("/api", appRouter());
   }
 
   /**
