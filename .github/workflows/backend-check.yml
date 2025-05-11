@@ -1,0 +1,66 @@
+name: Backend Code Execution Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      # MCP_Execution_Server checks
+      - name: Install dependencies for MCP_Execution_Server
+        run: |
+          cd backend/MCP_Execution_Server
+          npm ci
+
+      - name: Build MCP_Execution_Server
+        run: |
+          cd backend/MCP_Execution_Server
+          npm run build
+
+      # Validation_Service checks
+      - name: Install dependencies for Validation_Service
+        run: |
+          cd backend/Validation_Service
+          npm ci
+
+      - name: Build Validation_Service
+        run: |
+          cd backend/Validation_Service
+          npm run build
+
+      # Docker compose validation
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Validate docker-compose.yml
+        run: |
+          cd backend
+          # Create dummy .env file with required variables from docker-compose.yml
+          echo "PRIVATE_KEY_AGGREGATOR=0x0000000000000000000000000000000000000000000000000000000000000001" > .env
+          echo "PRIVATE_KEY_ATTESTER1=0x0000000000000000000000000000000000000000000000000000000000000002" >> .env
+          echo "PRIVATE_KEY_ATTESTER2=0x0000000000000000000000000000000000000000000000000000000000000003" >> .env
+          echo "PRIVATE_KEY_ATTESTER3=0x0000000000000000000000000000000000000000000000000000000000000004" >> .env
+          echo "PRIVATE_KEY_PERFORMER=0x0000000000000000000000000000000000000000000000000000000000000005" >> .env
+          echo "OTHENTIC_BOOTSTRAP_ID=dummy_bootstrap_id" >> .env
+
+          # Check if docker-compose file is valid
+          docker-compose config
+
+      - name: Check Docker build
+        run: |
+          cd backend
+          # Build the Docker images without starting the containers
+          docker-compose build
