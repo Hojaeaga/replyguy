@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { ReclaimClient } from '@reclaimprotocol/zk-fetch';
 
 import { config } from "./config.js";
@@ -23,7 +22,6 @@ async function main() {
   )
 
   const ai = new AIService(config.openai.apiKey as string);
-  console.log("RPC BASE ADDRESS:", config.network.rpcBaseAddress);
   const avs = new AVSService(
     config.network.rpcBaseAddress,
     config.network.privateKey,

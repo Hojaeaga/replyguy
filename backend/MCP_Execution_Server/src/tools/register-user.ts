@@ -1,14 +1,15 @@
 import axios from "axios";
 import type { AxiosResponse } from "axios";
+
 import { UserService } from "../services/user.service.js";
 import { NeynarService } from "../services/neynar.service.js";
 import { AIService } from "../services/ai.service.js";
-import { config } from "../config.js";
 import { AVSService } from "../services/avs.service.js";
 import { IpfsService } from "../services/ipfs.service.js";
-import { ReclaimClient } from "@reclaimprotocol/zk-fetch";
 import { DBService } from "../services/db.service.js";
 
+import { config } from "../config.js";
+import { ReclaimClient } from "@reclaimprotocol/zk-fetch";
 /**
  * CLI tool to register a user's data by FID
  */
@@ -40,9 +41,11 @@ async function registerUser() {
      * creators
      * crypto
      * geopolitics
+     * fitness
+     * farcaster
      */
 
-    const channelId = "fitness";
+    const channelId = "degen";
 
     // Define the response type based on the Farcaster API docs
     interface ChannelMember {
