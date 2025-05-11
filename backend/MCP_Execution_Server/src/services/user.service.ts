@@ -63,7 +63,6 @@ export class UserService {
 
       const { success, data: alreadySubscribedFIDs } = await this.db.fetchSubscribedFIDs();
       if (!success) throw new Error("Failed to fetch subscribed FIDs");
-      console.log("alreadySubscribedFIDs", alreadySubscribedFIDs);
 
 
       const alreadySubsribed = await this.checkFIDStatus(Number(fid));
@@ -152,6 +151,11 @@ export class UserService {
   async registerCast(fid: string, cast: any) {
     console.log("registering cast");
 
+    if (cast.text === "") {
+      console.log("Cast text is empty, skipping");
+      return { success: true, data: "Cast text is empty, skipping" };
+    }
+
     const { data: existingReply } = await this.db.isCastReplyExists(cast.hash);
 
     if (existingReply) {
@@ -199,7 +203,7 @@ export class UserService {
       const userFeedPromises = Object.keys(similarUserMap).map(
         async (similarFid) => {
           const userData =
-            await this.neynarService.fetchCastsForUser(similarFid);
+            await this.neynarService.fetchCastsForUserData(similarFid);
           return { userData, summary: similarUserMap[similarFid].summary };
         },
       );
