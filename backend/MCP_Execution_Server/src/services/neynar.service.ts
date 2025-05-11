@@ -4,6 +4,8 @@ import type { AVSService } from "./avs.service.js";
 import type { IpfsService } from "./ipfs.service.js";
 import { config } from "../config.js";
 export class NeynarService {
+
+  NEYNAR_BASE_URL = "https://api.neynar.com/v2/farcaster";
   constructor(
     private neynarApiKey: string,
     private signerUuid: string,
@@ -22,14 +24,14 @@ export class NeynarService {
   async fetchSubscribedUsers(): Promise<string[]> {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/webhook?webhook_id=01JTB3W4GW48Z58X0HQAM587AJ",
+        `${this.NEYNAR_BASE_URL}/webhook?webhook_id=01JTB3W4GW48Z58X0HQAM587AJ`,
         { headers: this.getHeaders() },
       );
 
       const targetWebhook = res.data.webhook;
 
       if (!targetWebhook) {
-        console.warn(`Webhook with ID not found.`);
+        console.warn("Webhook with ID not found.");
         return [];
       }
 
@@ -48,14 +50,14 @@ export class NeynarService {
   async updateWebhook({ updatedFids }: { updatedFids: string[] }) {
     try {
       const numericFids = updatedFids
-        .filter((fid) => typeof fid === "number" || !isNaN(Number(fid)))
+        .filter((fid) => typeof fid === "number" || !Number.isNaN(Number(fid)))
         .map((fid) => Number(fid));
       const res = await axios.put(
-        "https://api.neynar.com/v2/farcaster/webhook",
+        `${this.NEYNAR_BASE_URL}/webhook`,
         {
           webhook_id: "01JTB3W4GW48Z58X0HQAM587AJ",
           name: "receiveCast",
-          url: config.host + "/api/register/cast",
+          url: `${config.host}/api/register/cast`,
           subscription: {
             "cast.created": {
               author_fids: numericFids,
@@ -73,7 +75,7 @@ export class NeynarService {
   async writeCast(text: string) {
     try {
       const res = await axios.post(
-        "https://api.neynar.com/v2/farcaster/cast",
+        `${this.NEYNAR_BASE_URL}/cast`,
         {
           signer_uuid: this.signerUuid,
           text,
@@ -98,7 +100,7 @@ export class NeynarService {
   }) {
     try {
       const res = await axios.post(
-        "https://api.neynar.com/v2/farcaster/cast",
+        `${this.NEYNAR_BASE_URL}/cast`,
         {
           signer_uuid: this.signerUuid,
           text,
@@ -117,7 +119,7 @@ export class NeynarService {
   async fetchUserRepliesAndRecasts(fid: string) {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/feed/user/replies_and_recasts",
+        `${this.NEYNAR_BASE_URL}/feed/user/replies_and_recasts`,
         {
           params: { fid },
           headers: this.getHeaders(),
@@ -157,7 +159,7 @@ export class NeynarService {
       },
     };
 
-    const url = `https://api.neynar.com/v2/farcaster/feed/user/popular?fid=${fid}`;
+    const url = `${this.NEYNAR_BASE_URL}/feed/user/popular?fid=${fid}`;
 
     let proof: any;
     let ipfsHash: any;
@@ -219,7 +221,7 @@ export class NeynarService {
   async fetchUserChannels(fid: string) {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/user/channels",
+        `${this.NEYNAR_BASE_URL}/user/channels`,
         {
           params: { fid },
           headers: this.getHeaders(),
@@ -266,7 +268,7 @@ export class NeynarService {
   async fetchTrendingFeeds() {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/feed/trending?limit=10",
+        `${this.NEYNAR_BASE_URL}/feed/trending?limit=10`,
         {
           headers: this.getHeaders(),
         },
@@ -299,7 +301,7 @@ export class NeynarService {
   async fetchUserFeeds(fid: string) {
     try {
       const res = await axios.get(
-        "https://api.neynar.com/v2/farcaster/feed/user",
+        `${this.NEYNAR_BASE_URL}/feed/user`,
         {
           params: { fid },
           headers: this.getHeaders(),
@@ -344,7 +346,7 @@ export class NeynarService {
       },
     };
 
-    const url = `https://api.neynar.com/v2/farcaster/feed/user/casts?fid=${fid}&limit=100`;
+    const url = `${this.NEYNAR_BASE_URL}/feed/user/casts?fid=${fid}&limit=100`;
 
     let proof: any;
     let ipfsHash: any;
@@ -423,7 +425,7 @@ export class NeynarService {
       },
     };
 
-    const url = `https://api.neynar.com/v2/farcaster/feed/user/popular?fid=${fid}`;
+    const url = `${this.NEYNAR_BASE_URL}/feed/user/popular?fid=${fid}`;
 
     let proof: any;
 
@@ -478,7 +480,7 @@ export class NeynarService {
       },
     };
 
-    const url = `https://api.neynar.com/v2/farcaster/feed/user/casts?fid=${fid}&limit=100`;
+    const url = `${this.NEYNAR_BASE_URL}/feed/user/casts?fid=${fid}&limit=100`;
 
     let proof: any;
 
