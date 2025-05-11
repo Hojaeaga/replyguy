@@ -7,6 +7,7 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cd build && node index.js",
+    "dev:watch": "nodemon --watch src --ext ts --exec \"npm run start\"",
     "start": "npm run build && node build/index.js",
     "register-user": "npm run build && node build/tools/register-user.js"
   },
@@ -36,6 +37,7 @@
     "@types/body-parser": "^1.19.5",
     "@types/express": "^5.0.1",
     "@types/node": "^22.13.10",
+    "nodemon": "^3.1.0",
     "typescript": "^5.8.2"
   }
 }
