@@ -25,7 +25,17 @@ export class UserService {
       return { success: false, error: err.message || err };
     }
   }
-
+  
+  async unsubscribeUser(fid: number) {
+    try {
+      const { success, data } = await this.db.unsubscribeFID(fid);
+      if (!success) throw new Error("Failed to unsubscribe user");
+      return { success: true, data };
+    } catch (err: any) {
+      console.error("unsubscribeUser error", err);
+      return { success: false, error: err.message || err };
+    }
+  }
   async checkSubscribedUser(fid: number) {
     try {
       const { success, subscribed } = await this.db.isSubscribed(fid);
