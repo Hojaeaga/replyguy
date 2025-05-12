@@ -15,7 +15,7 @@ export const config = createConfig({
   connectors: [farcasterFrame()],
 });
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export default function Provider({ children }: { children: React.ReactNode }) {
   return (

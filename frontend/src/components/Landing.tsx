@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFrame } from "./providers/FrameProvider";
 import Image from "next/image";
 import {
@@ -9,10 +9,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../components/ui/carousel";
-import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useQuery } from "wagmi/query";
 import { sdk } from "@farcaster/frame-sdk";
+import { queryClient } from "./providers/WagmiProvider";
 type UserSubscriptionResponse = {
   result: {
     subscribed: boolean;
@@ -76,6 +76,7 @@ const registerUser = async (fid: number) => {
 
 export default function Home() {
   const { context } = useFrame();
+  const [isSubscribed, setSubscribed] = useState(false);
   const screen2Ref = useRef<HTMLDivElement>(null);
   const screen3Ref = useRef<HTMLDivElement>(null);
   const prevRef = useRef<HTMLButtonElement>(null);
@@ -88,29 +89,26 @@ export default function Home() {
     [string, number | undefined] // TQueryKey
   >({
     queryKey: ["userSubscription", context?.user?.fid],
-    queryFn: () => {
+    queryFn: async () => {
       if (!context?.user?.fid) {
         return Promise.resolve({ result: { subscribed: false } });
       }
-      return fetchUserSubscription(context.user.fid);
+      return await fetchUserSubscription(context.user.fid);
     },
   });
 
-  const isSubscribed = useMemo(() => {
-    if (!fetchUserQuery.data) return false;
-    return fetchUserQuery.data?.result.subscribed;
-  }, [fetchUserQuery.data]);
-
+  console.log(fetchUserQuery.data, isSubscribed);
   const mutation = useMutation({
     mutationFn: registerUser,
-    onSuccess: async (data) => {
-      toast.success("Thanks for subscribing!");
-      await sdk.actions.addFrame();
+    onSuccess: (data) => {
       console.log("Registration successful:", data);
+      setSubscribed(true);
+      queryClient.refetchQueries({
+        queryKey: ["userSubscription", context?.user?.fid],
+      });
     },
     onError: (error) => {
       console.error("Error registering user:", error);
-      toast.error(error.message || "Registration failed");
     },
   });
 
@@ -122,12 +120,6 @@ export default function Home() {
       });
       return result;
     },
-    onSuccess: async () => {
-      toast.success("Thanks for sharing!");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Sharing failed");
-    },
   });
 
   const handleSubscribe = () => {
@@ -136,7 +128,12 @@ export default function Home() {
       return;
     }
     mutation.mutate(context.user.fid);
+    setSubscribed(true);
   };
+  useEffect(() => {
+    if (!fetchUserQuery.data) return;
+    setSubscribed(fetchUserQuery.data?.result.subscribed);
+  }, [fetchUserQuery.data]);
 
   return (
     <main className="font-sans bg-white text-gray-900 overflow-x-hidden">
