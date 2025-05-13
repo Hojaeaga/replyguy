@@ -297,7 +297,6 @@ export class UserService {
         similarUserFeeds,
         trendingFeeds,
       });
-      console.log("AI response", aiResponse);
       if (!aiResponse || !aiResponse.replyText) {
         throw new Error("AI response generation failed");
       }
@@ -322,7 +321,7 @@ export class UserService {
 
       console.log("Cast replied");
 
-      await this.db.addCastReply(castReply.hash);
+      await this.db.addCastReply(castReply.cast.hash);
 
       return { success: true, data: aiResponse };
     } catch (err: any) {
