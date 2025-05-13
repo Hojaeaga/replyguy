@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import App from "./app";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
+const appUrl =  `https://replyguy.megabyte0x.xyz`;
 
 // frame preview metadata
 const appName = "ReplyGuy";
