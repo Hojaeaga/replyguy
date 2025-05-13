@@ -1,6 +1,7 @@
 import type { NeynarService } from "./neynar.service.js";
 import type { AIService } from "./ai.service.js";
 import type { DBService } from "./db.service.js";
+import { GeminiAiService } from "./gemini_ai.service.js";
 
 export enum FID_STATUS {
   NOT_EXIST = "NOT_EXIST",
@@ -13,8 +14,67 @@ export class UserService {
     private neynarService: NeynarService,
     private aiService: AIService,
     private db: DBService,
-  ) { }
+    private geminiService?: GeminiAiService,
+  ) {}
 
+  private async summarizeUserContextSafe(
+    userData: any,
+  ): Promise<string | null> {
+    try {
+      if (this.geminiService) {
+        const summary = await this.geminiService.summarizeUserContext(userData);
+        if (summary) return summary;
+      }
+      return await this.aiService.summarizeUserContext(userData);
+    } catch (e) {
+      console.warn("Fallback to AIService for summarizeUserContext");
+      return await this.aiService.summarizeUserContext(userData);
+    }
+  }
+
+  private async generateEmbeddingsSafe(text: string): Promise<any | null> {
+    try {
+      if (this.geminiService) {
+        const embeddings = await this.geminiService.generateEmbeddings(text);
+        if (embeddings) return embeddings;
+      }
+      return await this.aiService.generateEmbeddings(text);
+    } catch (e) {
+      console.warn("Fallback to AIService for generateEmbeddings");
+      return await this.aiService.generateEmbeddings(text);
+    }
+  }
+
+  private async generateReplyForCastSafe(input: {
+    userCast: string;
+    castSummary: string;
+    similarUserFeeds: any;
+    trendingFeeds: any;
+  }): Promise<any> {
+    try {
+      if (this.geminiService) {
+        const reply = await this.geminiService.generateReplyForCast(input);
+        if (reply?.replyText) return reply;
+      }
+      return await this.aiService.generateReplyForCast(input);
+    } catch (e) {
+      console.warn("Fallback to AIService for generateReplyForCast");
+      return await this.aiService.generateReplyForCast(input);
+    }
+  }
+
+  private async findMeaningFromTextSafe(text: string): Promise<string> {
+    try {
+      if (this.geminiService) {
+        const summary = await this.geminiService.findMeaningFromText(text);
+        if (summary) return summary;
+      }
+      return await this.aiService.findMeaningFromText(text);
+    } catch (e) {
+      console.warn("Fallback to AIService for findMeaningFromText");
+      return await this.aiService.findMeaningFromText(text);
+    }
+  }
   async fetchAllUsers() {
     try {
       const { success, data } = await this.db.fetchAllFIDs();
@@ -25,7 +85,7 @@ export class UserService {
       return { success: false, error: err.message || err };
     }
   }
-  
+
   async unsubscribeUser(fid: number) {
     try {
       const { success, data } = await this.db.unsubscribeFID(fid);
@@ -49,7 +109,9 @@ export class UserService {
     }
   }
 
-  async checkFIDStatus(fid: number): Promise<{ success: boolean; status?: FID_STATUS; error?: string }> {
+  async checkFIDStatus(
+    fid: number,
+  ): Promise<{ success: boolean; status?: FID_STATUS; error?: string }> {
     try {
       const { success, data } = await this.db.checkFIDStatus(fid);
 
@@ -64,20 +126,21 @@ export class UserService {
       return { success: true, status: FID_STATUS.EXIST };
     } catch (err: unknown) {
       console.error("checkFIDStatus error", err);
-      return { success: false, error: err instanceof Error ? err.message : String(err) };
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
     }
   }
 
   async registerUser(fid: string) {
     try {
-
-      const { success, data: alreadySubscribedFIDs } = await this.db.fetchSubscribedFIDs();
+      const { success, data: alreadySubscribedFIDs } =
+        await this.db.fetchSubscribedFIDs();
       if (!success) throw new Error("Failed to fetch subscribed FIDs");
-
 
       const alreadySubsribed = await this.checkFIDStatus(Number(fid));
       if (alreadySubsribed.success) {
-
         if (alreadySubsribed.status === FID_STATUS.SUBSCRIBED) {
           return { success: true, data: `User ${fid} already subscribed` };
         }
@@ -93,12 +156,16 @@ export class UserService {
         }
 
         const userData = await this.neynarService.aggregateUserData(fid);
-        const summary = await this.aiService.summarizeUserContext(userData);
+        const summary = await this.summarizeUserContextSafe(userData);
         if (!summary) throw new Error("Summary generation failed");
-        const embeddings = await this.aiService.generateEmbeddings(summary);
+        const embeddings = await this.generateEmbeddingsSafe(summary);
         if (!embeddings) throw new Error("Embedding generation failed");
 
-        const { success } = await this.db.registerAndSubscribeFID(fid, summary, embeddings);
+        const { success } = await this.db.registerAndSubscribeFID(
+          fid,
+          summary,
+          embeddings,
+        );
         if (!success) throw new Error("User registration failed");
 
         const newSubscribedUserIds = [...alreadySubscribedFIDs, fid];
@@ -135,7 +202,11 @@ export class UserService {
       const embeddings = await this.aiService.generateEmbeddings(summary);
       if (!embeddings) throw new Error("Embedding generation failed");
 
-      const { success } = await this.db.onlyRegisterFID(fid, summary, embeddings);
+      const { success } = await this.db.onlyRegisterFID(
+        fid,
+        summary,
+        embeddings,
+      );
       console.log("Registered user data", fid);
       if (!success) throw new Error("User registration failed");
       return { success: true, data: userData };
@@ -180,21 +251,21 @@ export class UserService {
 
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
-      const { success, registered } = await this.db.isRegistered(Number(fid));
+      // const { success, registered } = await this.db.isRegistered(Number(fid));
 
-      if (!success || !registered) {
-        throw new Error(`User with fid ${fid} not found`);
-      }
+      // if (!success || !registered) {
+      //   throw new Error(`User with fid ${fid} not found`);
+      // }
 
       // Step 2: Generate embeddings for the received cast
-      const castSummary = await this.aiService.findMeaningFromText(cast.text);
-      const castEmbeddings =
-        await this.aiService.generateEmbeddings(castSummary);
+      const castSummary = await this.findMeaningFromTextSafe(cast.text);
+      const castEmbeddings = await this.generateEmbeddingsSafe(castSummary);
       if (!castEmbeddings) {
         throw new Error("Embedding generation failed for the cast text");
       }
 
-      const { data: similarUsers, error: similarityError } = await this.db.fetchSimilarFIDs(castEmbeddings, 0.4, 3);
+      const { data: similarUsers, error: similarityError } =
+        await this.db.fetchSimilarFIDs(castEmbeddings, 0.4, 3);
       console.log("Similar users", similarUsers);
       if (similarityError || !similarUsers) {
         throw new Error("Error finding similar users");
@@ -219,14 +290,15 @@ export class UserService {
       );
       const similarUserFeeds = await Promise.all(userFeedPromises);
       const trendingFeeds = await this.neynarService.fetchTrendingFeeds();
+      console.log("Trending feeds", trendingFeeds);
 
-      const aiResponse = await this.aiService.generateReplyForCast({
+      const aiResponse = await this.generateReplyForCastSafe({
         userCast: cast.text,
-        castSummary: castSummary,
+        castSummary,
         similarUserFeeds,
         trendingFeeds,
       });
-
+      console.log("AI response", aiResponse);
       if (!aiResponse || !aiResponse.replyText) {
         throw new Error("AI response generation failed");
       }
@@ -239,21 +311,21 @@ export class UserService {
         return { success: true, data: aiResponse };
       }
 
-      const castReply = await this.neynarService.replyToCast({
-        text: aiResponse.replyText,
-        parentHash: cast.hash,
-        embeds: [
-          {
-            url: aiResponse.link,
-          },
-        ],
-      });
+      // const castReply = await this.neynarService.replyToCast({
+      //   text: aiResponse.replyText,
+      //   parentHash: cast.hash,
+      //   embeds: [
+      //     {
+      //       url: aiResponse.link,
+      //     },
+      //   ],
+      // });
+      //
+      // console.log("Cast replied");
 
-      console.log("Cast replied");
+      // await this.db.addCastReply(cast.hash);
 
-      await this.db.addCastReply(cast.hash);
-
-      return { success: true, data: castReply };
+      return { success: true, data: aiResponse};
     } catch (err: any) {
       console.error("registerCast error", err);
       return { success: false, error: err.message || err };
