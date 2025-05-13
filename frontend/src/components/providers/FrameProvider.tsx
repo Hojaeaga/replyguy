@@ -92,7 +92,7 @@ export function useFrame() {
 
       // Call ready action
       console.log("Calling ready");
-      sdk.actions.ready({});
+      sdk.actions.ready();
 
       // Set up MIPD Store
       const store = createStore();
