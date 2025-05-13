@@ -15,7 +15,7 @@ export class UserService {
     private aiService: AIService,
     private db: DBService,
     private geminiService?: GeminiAiService,
-  ) {}
+  ) { }
 
   private async summarizeUserContextSafe(
     userData: any,
@@ -251,11 +251,11 @@ export class UserService {
 
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
-      // const { success, registered } = await this.db.isRegistered(Number(fid));
+      const { success, registered } = await this.db.isRegistered(Number(fid));
 
-      // if (!success || !registered) {
-      //   throw new Error(`User with fid ${fid} not found`);
-      // }
+      if (!success || !registered) {
+        throw new Error(`User with fid ${fid} not found`);
+      }
 
       // Step 2: Generate embeddings for the received cast
       const castSummary = await this.findMeaningFromTextSafe(cast.text);
@@ -290,7 +290,6 @@ export class UserService {
       );
       const similarUserFeeds = await Promise.all(userFeedPromises);
       const trendingFeeds = await this.neynarService.fetchTrendingFeeds();
-      console.log("Trending feeds", trendingFeeds);
 
       const aiResponse = await this.generateReplyForCastSafe({
         userCast: cast.text,
@@ -311,21 +310,21 @@ export class UserService {
         return { success: true, data: aiResponse };
       }
 
-      // const castReply = await this.neynarService.replyToCast({
-      //   text: aiResponse.replyText,
-      //   parentHash: cast.hash,
-      //   embeds: [
-      //     {
-      //       url: aiResponse.link,
-      //     },
-      //   ],
-      // });
-      //
-      // console.log("Cast replied");
+      const castReply = await this.neynarService.replyToCast({
+        text: aiResponse.replyText,
+        parentHash: cast.hash,
+        embeds: [
+          {
+            url: aiResponse.link,
+          },
+        ],
+      });
 
-      // await this.db.addCastReply(cast.hash);
+      console.log("Cast replied");
 
-      return { success: true, data: aiResponse};
+      await this.db.addCastReply(castReply.hash);
+
+      return { success: true, data: aiResponse };
     } catch (err: any) {
       console.error("registerCast error", err);
       return { success: false, error: err.message || err };
