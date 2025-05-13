@@ -150,12 +150,17 @@ export default function Home() {
     },
   });
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     if (!context || !context.user?.displayName) {
       console.log("User not logged in");
       return;
     }
-    mutation.mutate(context.user.fid);
+    await mutation.mutateAsync(context.user.fid);
+    try {
+      await sdk.actions.addFrame();
+    } catch (error) {
+      console.log("Error adding frame:", error);
+    }
     setSubscribed(true);
   };
   useEffect(() => {
@@ -319,7 +324,7 @@ export default function Home() {
                 Unsubscribe
               </button>
               <p className="text-xs font-semibold text-red-600">
-               We are sad to see you go 
+                We are sad to see you go
               </p>
             </div>
           )}
