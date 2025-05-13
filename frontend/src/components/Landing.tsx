@@ -74,6 +74,20 @@ const registerUser = async (fid: number) => {
   return response.json();
 };
 
+const unsubscribeUser = async (fid: number) => {
+  const response = await fetch(`/api/backend/unsubscribe`, {
+    method: "POST",
+    body: JSON.stringify({ fid }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Unsubscribe failed");
+  }
+
+  return response.json();
+};
+
 export default function Home() {
   const { context } = useFrame();
   const [isSubscribed, setSubscribed] = useState(false);
@@ -97,7 +111,6 @@ export default function Home() {
     },
   });
 
-  console.log(fetchUserQuery.data, isSubscribed);
   const mutation = useMutation({
     mutationFn: registerUser,
     onSuccess: (data) => {
@@ -108,7 +121,22 @@ export default function Home() {
       });
     },
     onError: (error) => {
+      setSubscribed(false);
       console.error("Error registering user:", error);
+    },
+  });
+
+  const unsubscribeMutation = useMutation({
+    mutationFn: unsubscribeUser,
+    onSuccess: (data) => {
+      console.log("Unsubscribe successful:", data);
+      setSubscribed(false);
+      queryClient.refetchQueries({
+        queryKey: ["userSubscription", context?.user?.fid],
+      });
+    },
+    onError: (error) => {
+      console.error("Error unsubscribing user:", error);
     },
   });
 
@@ -280,18 +308,20 @@ export default function Home() {
               {mutation.isPending ? "Loading..." : "Count me in !"}
             </button>
           ) : (
-            <>
-              <p className="text-sm font-semibold text-green-600">
-                🎉 You&apos;re already subscribed!
-              </p>
+            <div className="flex flex-col gap-3">
               <button
-                onClick={() => handleComposeMutation.mutate()}
-                disabled={handleComposeMutation.isPending}
-                className="mt-6 px-4 py-2 text-[14.1px] bg-black text-white rounded-[10px] font-semibold hover:scale-105 transition"
+                onClick={() =>
+                  unsubscribeMutation.mutate(context?.user.fid as number)
+                }
+                disabled={unsubscribeMutation.isPending}
+                className="mt-6 px-4 py-2 text-[14.1px] bg-red-600 text-white rounded-[10px] font-semibold hover:bg-red-700 transition"
               >
-                Share with your friends!
+                Unsubscribe
               </button>
-            </>
+              <p className="text-xs font-semibold text-red-600">
+               We are sad to see you go 
+              </p>
+            </div>
           )}
         </div>
         <p className="mt-4 text-gray-600 text-xs max-w-md text-center font-semibold">

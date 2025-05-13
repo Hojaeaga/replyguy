@@ -71,8 +71,13 @@ export function userRouter(userService: UserService): Router {
   router.post(
     "/unsubscribe/user",
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      const { fid } = req.body;
+      const apiKey = req.header("x-api-key");
 
+      if (!apiKey || apiKey !== process.env.INTERNAL_API_KEY) {
+        res.status(401).json({ error: "Unauthorized: Invalid API key" });
+        return;
+      }
+      const { fid } = req.body;
       if (!fid) {
         res.status(400).json({ error: "Missing User FID" });
         return;
