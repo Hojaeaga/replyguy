@@ -1,20 +1,20 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import App from "./app";
 
 const appUrl = process.env.NEXT_PUBLIC_URL;
 
 // frame preview metadata
-const appName = process.env.NEXT_PUBLIC_FRAME_NAME;
+const appName = "ReplyGuy";
 const splashImageUrl = `${appUrl}/logo_replyguy.png`;
 const iconUrl = `${appUrl}/logo_replyguy.png`;
 
 const framePreviewMetadata = {
   version: "next",
-  imageUrl: `${appUrl}/opengraph.png`,
+  imageUrl: `${appUrl}/full_logo.png`,
   iconUrl,
-  heroImageUrl: `${appUrl}/logo_replyguy.png`,
+  heroImageUrl: `${appUrl}/full_logo.png`,
   button: {
-    title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
+    title: "Get my reply guy!",
     action: {
       type: "launch_frame",
       name: appName,

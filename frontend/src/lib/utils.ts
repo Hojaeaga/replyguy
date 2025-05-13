@@ -10,14 +10,21 @@ interface FrameMetadata {
   };
   frame: {
     version: string;
+    description: string;
     name: string;
     iconUrl: string;
+    tagline: string;
     homeUrl: string;
     imageUrl: string;
     buttonTitle: string;
     splashImageUrl: string;
     splashBackgroundColor: string;
+    primaryCategory: string;
     webhookUrl: string;
+    ogTitle: string;
+    ogDescription: string;
+    ogImageUrl: string;
+    heroImageUrl: string;
   };
 }
 
@@ -64,14 +71,14 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
     );
   }
 
-  let accountAssociation;
+  let accountAssociation: FrameMetadata["accountAssociation"];
   if (secretEnvVars) {
     // Generate account from seed phrase
     const account = mnemonicToAccount(secretEnvVars.seedPhrase);
     const custodyAddress = account.address;
 
     const header = {
-      fid: parseInt(secretEnvVars.fid),
+      fid: Number.parseInt(secretEnvVars.fid),
       type: "custody",
       key: custodyAddress,
     };
@@ -93,11 +100,9 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
     Buffer.from(signature, "utf-8").toString("base64url");
 
     accountAssociation = {
-      header:
-        "eyJmaWQiOjQzNTQ2NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDNkOTdiMDk2MDU2NzM0NTdiMjVCZWI0QjEyOTAxY0NDZEMwMUNFMWIifQ",
-      payload: "eyJkb21haW4iOiJyZXBseWd1eS5tZWdhYnl0ZTB4Lnh5eiJ9",
-      signature:
-        "MHhjN2Q3NGNhNWJkNDk2ZWUwMDE3YThlNjkxYTA1MjhjZmI3MzI0NDIwMzAxMzc3MjAyNjRhZDNkZjAzZTU4MGY4NWJkYTQ2NThkOTg5N2Q3OTJjODQyMTdlZWE2ZmI0ODUyNjI5MzlkOTEwYmFmMzZkYzM0Y2ZlODljNWZhZjZlNjFi",
+      header: encodedHeader,
+      payload: encodedPayload,
+      signature: signature,
     };
   }
 
@@ -109,20 +114,35 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
       ? `https://api.neynar.com/f/app/${neynarClientId}/event`
       : `${appUrl}/api/webhook`;
 
+
+  const imageUrl = `${appUrl}/full_logo.png`;
+  const logoUrl = `${appUrl}/logo.png`;
+  const description = "Get the most relevant content discovery on your each cast.";
+  const ogTitle = "ReplyGuy";
+  const buttonTitle = "Get my reply guy!";
+  const name = "ReplyGuy";
+  const primaryCategory = "social";
+  const tagline = "Your 24x7 reply guy";
+
   return {
     accountAssociation,
     frame: {
       version: "1",
-      name: process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo",
-      iconUrl: `${appUrl}/icon.png`,
-      // @ts-expect-error sffds
-      heroImageUrl: `${appUrl}/logo_replyguy.png`,
+      name,
+      iconUrl: logoUrl,
+      heroImageUrl: imageUrl,
       homeUrl: appUrl,
-      imageUrl: `${appUrl}/opengraph-image`,
-      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
-      splashImageUrl: `${appUrl}/splash.png`,
+      description,
+      tagline,
+      imageUrl,
+      buttonTitle,
+      splashImageUrl: logoUrl,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl,
+      ogDescription: description,
+      ogImageUrl: imageUrl,
+      ogTitle,
+      primaryCategory,
     },
   };
 }
