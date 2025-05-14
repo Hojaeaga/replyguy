@@ -42,10 +42,18 @@ Bad output:
     `;
 
     try {
+      /**
+       * TODO: Fix this
+       * 
+       * Received error:
+       * ClientError: got status: 404 Not Found. {"error":{"code":404,"message":"models/gemini-2.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.","status":"NOT_FOUND"}}
+       */
       const result = await this.ai.models.generateContent({
         model: this.geminiModel,
         contents: prompt,
       });
+
+      console.log("Summarize user context result from Gemini", result);
       return result.text;
     } catch (err: any) {
       console.error("summarizeUserContext error", err);
@@ -187,10 +195,10 @@ Your response should be a valid JSON object with no additional text or explanati
         return content
           ? JSON.parse(content)
           : {
-              replyText:
-                "No relevant trending casts found in the provided data.",
-              link: "",
-            };
+            replyText:
+              "No relevant trending casts found in the provided data.",
+            link: "",
+          };
       } catch (jsonErr) {
         console.warn("Response was not valid JSON:", content);
         return { error: "Invalid JSON format in AI response", raw: content };

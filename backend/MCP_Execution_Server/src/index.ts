@@ -24,8 +24,8 @@ async function main() {
     config.reclaim.appId,
     config.reclaim.appSecret,
   );
-  const geminiai = new GeminiAiService(config.gemini.apiKey as string);
-  const ai = new AIService(config.openai.apiKey as string);
+  const geminiai = new GeminiAiService(config.gemini.apiKey);
+  const ai = new AIService(config.openai.apiKey);
   const avs = new AVSService(
     config.network.rpcBaseAddress,
     config.network.privateKey,
@@ -41,7 +41,7 @@ async function main() {
     avs,
     ipfs,
   );
-  const user = new UserService(neynar, ai, db);
+  const user = new UserService(neynar, ai, db, geminiai);
 
   // Initialize services
   const services = {
