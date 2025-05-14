@@ -100,9 +100,11 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
     Buffer.from(signature, "utf-8").toString("base64url");
 
     accountAssociation = {
-      header: encodedHeader,
-      payload: encodedPayload,
-      signature: signature,
+      header:
+        "eyJmaWQiOjE0NTgyLCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4RTc0NzUyQTZlQTgyOWJmMEY0N0Q4ODMzRjVjMEY5MDMwYWIyMTU1MyJ9",
+      payload: "eyJkb21haW4iOiJyZXBseWd1eS5tZWdhYnl0ZTB4Lnh5eiJ9",
+      signature:
+        "MHhjMDVjMTkyZTgyYzFmOGVmM2M3YzE4NTExMjdiMmFhZjYyMjZiZmYzMDYzNTM5ZTE2ODI5ZmE4NmE0YjkxYjg2MTBkOGU5M2JmMzBhMDA5ZTljMzMwMjE3OTA3NmM3NDYzYmE0NTc0MzBmZDU0MTk2ZTIwZDNhMDVlMWUyOTkzNjFj",
     };
   }
 
@@ -114,10 +116,10 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
       ? `https://api.neynar.com/f/app/${neynarClientId}/event`
       : `${appUrl}/api/webhook`;
 
-
   const imageUrl = `${appUrl}/full_logo.png`;
   const logoUrl = `${appUrl}/logo.png`;
-  const description = "Get the most relevant content discovery on your each cast.";
+  const description =
+    "Get the most relevant content discovery on your each cast.";
   const ogTitle = "ReplyGuy";
   const buttonTitle = "Get my reply guy!";
   const name = "ReplyGuy";
