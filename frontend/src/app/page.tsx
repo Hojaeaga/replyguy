@@ -10,7 +10,7 @@ const iconUrl = `${appUrl}/logo_replyguy.png`;
 
 const framePreviewMetadata = {
   version: "next",
-  imageUrl: `${appUrl}/full_logo.png`,
+  imageUrl: `${appUrl}/api/svg`,
   iconUrl,
   heroImageUrl: `${appUrl}/full_logo.png`,
   button: {
