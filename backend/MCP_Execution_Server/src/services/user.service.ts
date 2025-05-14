@@ -76,14 +76,35 @@ export class UserService {
   }
 
   async unsubscribeUser(fid: number) {
+    let subscribedFIDs: any[] = [];
+    let result: any;
     try {
       const { success, data } = await this.db.unsubscribeFID(fid);
       if (!success) throw new Error("Failed to unsubscribe user");
-      return { success: true, data };
+      result = data;
     } catch (err: any) {
       console.error("unsubscribeUser error", err);
       return { success: false, error: err.message || err };
     }
+    try {
+      const { success, data } = await this.db.fetchSubscribedFIDs();
+      if (!success) throw new Error("Failed to fetch subscribed FIDs");
+      subscribedFIDs = data;
+    } catch (err: any) {
+      console.error("fetchAllUsers error", err);
+      return { success: false, error: err.message || err };
+    }
+
+    try {
+      await this.neynarService.updateWebhook({
+        updatedFids: subscribedFIDs,
+      });
+    } catch (err: any) {
+      console.error("updateWebhook error", err);
+      return { success: false, error: err.message || err };
+    }
+
+    return { success: true, data: result };
   }
   async checkSubscribedUser(fid: number) {
     try {
@@ -240,10 +261,15 @@ export class UserService {
 
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
-      const { success, registered } = await this.db.isRegistered(Number(fid));
+      const isRegistered = await this.db.isRegistered(Number(fid));
+      const isSubscribed = await this.db.isSubscribed(Number(fid));
 
-      if (!success || !registered) {
+      if (!isRegistered.success || !isRegistered.registered) {
         throw new Error(`User with fid ${fid} not found`);
+      }
+
+      if (!isSubscribed.success || !isSubscribed.subscribed) {
+        throw new Error(`User with fid ${fid} is not subscribed`);
       }
 
       // Step 2: Generate embeddings for the received cast
