@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 export class GeminiAiService {
   private ai: GoogleGenAI;
@@ -9,7 +9,7 @@ export class GeminiAiService {
     this.ai = new GoogleGenAI({
       apiKey: this.geminiApiKey,
     });
-    this.geminiModel = "gemini-2.5-flash";
+    this.geminiModel = "gemini-2.5-flash-preview-04-17";
     this.embeddingModel = "embedding-001";
   }
 
@@ -44,7 +44,7 @@ Bad output:
     try {
       /**
        * TODO: Fix this
-       * 
+       *
        * Received error:
        * ClientError: got status: 404 Not Found. {"error":{"code":404,"message":"models/gemini-2.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.","status":"NOT_FOUND"}}
        */
@@ -159,8 +159,7 @@ ${formattedTrendingFeeds}
 7. AVOID talking about airdrops and giveaways.
 </instructions>
 
-<output_format>
-You MUST respond with ONLY a valid JSON object containing exactly these two fields:
+<output_guidelines>
 - replyText: A string with the message "You should connect with [author_username], who said: '[cast_text]'" - Max 60-70 words, 320 characters.
 - link: A string with the URL "https://warpcast.com/[author_username]/[cast_hash]" - this should MATCH the cast you selected and not a fabricated/random one.
 
@@ -177,30 +176,36 @@ If and only if you find no relevant casts, respond with this exact format:
   "replyText": "No relevant trending casts found in the provided data.",
   "link": ""
 }
-</output_format>
-
-<response_requirements>
-Your response should be a valid JSON object with no additional text or explanation.
-</response_requirements>
+</output_guidelines>
     `;
 
     try {
       const result = await this.ai.models.generateContent({
         model: this.geminiModel,
         contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              replyText: { type: Type.STRING },
+              link: { type: Type.STRING },
+            },
+            required: ["replyText", "link"],
+          },
+        },
       });
-      const content = result.text?.trim();
-
+      const content = result.text;
       try {
         return content
           ? JSON.parse(content)
           : {
-            replyText:
-              "No relevant trending casts found in the provided data.",
-            link: "",
-          };
+              replyText:
+                "No relevant trending casts found in the provided data.",
+              link: "",
+            };
       } catch (jsonErr) {
-        console.warn("Response was not valid JSON:", content);
+        console.warn("Response was not valid JSON Gemini:", content);
         return { error: "Invalid JSON format in AI response", raw: content };
       }
     } catch (err: any) {
