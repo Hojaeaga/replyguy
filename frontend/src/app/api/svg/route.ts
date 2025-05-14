@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic"; // ensure it's not cached if needed
-
 export async function GET() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/app/get-subscriber-count`);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/app/get-subscriber-count`,
+  );
   const data = await res.json();
   const subCount = data.result.data ?? 0;
 
@@ -28,7 +28,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "public, max-age=3600",
     },
   });
 }

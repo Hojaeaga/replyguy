@@ -116,7 +116,7 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
       ? `https://api.neynar.com/f/app/${neynarClientId}/event`
       : `${appUrl}/api/webhook`;
 
-  const imageUrl = `${appUrl}/full_logo.png`;
+  const imageUrl = `${appUrl}/api/svg`;
   const logoUrl = `${appUrl}/logo.png`;
   const description =
     "Get the most relevant content discovery on your each cast.";
