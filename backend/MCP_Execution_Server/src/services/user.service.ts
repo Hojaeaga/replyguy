@@ -241,11 +241,11 @@ export class UserService {
 
     try {
       // Step 1: Check if the DB has the FID of the user who sent the webhook
-      // const { success, registered } = await this.db.isRegistered(Number(fid));
-      //
-      // if (!success || !registered) {
-      //   throw new Error(`User with fid ${fid} not found`);
-      // }
+      const { success, registered } = await this.db.isRegistered(Number(fid));
+
+      if (!success || !registered) {
+        throw new Error(`User with fid ${fid} not found`);
+      }
 
       // Step 2: Generate embeddings for the received cast
       const castSummary = await this.findMeaningFromTextSafe(cast.text);
@@ -300,19 +300,19 @@ export class UserService {
         return { success: true, data: aiResponse };
       }
 
-      // const castReply = await this.neynarService.replyToCast({
-      //   text: aiResponse.replyText,
-      //   parentHash: cast.hash,
-      //   embeds: [
-      //     {
-      //       url: aiResponse.link,
-      //     },
-      //   ],
-      // });
-      //
-      // console.log("Cast replied");
-      //
-      // await this.db.addCastReply(castReply.cast.hash);
+      const castReply = await this.neynarService.replyToCast({
+        text: aiResponse.replyText,
+        parentHash: cast.hash,
+        embeds: [
+          {
+            url: aiResponse.link,
+          },
+        ],
+      });
+
+      console.log("Cast replied");
+
+      await this.db.addCastReply(castReply.cast.hash);
 
       return { success: true, data: aiResponse };
     } catch (err: any) {
