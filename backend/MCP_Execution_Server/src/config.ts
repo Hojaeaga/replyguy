@@ -10,11 +10,11 @@ export const config = {
     apiKey: process.env.NEYNAR_API_KEY ?? "0x",
     signerUuid: process.env.NEYNAR_SIGNER_UUID ?? "0x",
   },
-  gemini:{
-    apiKey: process.env.GEMINI_API_KEY ?? "0x",
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY ?? "",
   },
   openai: {
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY ?? "",
   },
   supabase: {
     SUPABASE_URL: process.env.SUPABASE_URL ?? "",
