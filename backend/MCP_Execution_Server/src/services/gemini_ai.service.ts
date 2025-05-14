@@ -53,7 +53,6 @@ Bad output:
         contents: prompt,
       });
 
-      console.log("Summarize user context result from Gemini", result);
       return result.text;
     } catch (err: any) {
       console.error("summarizeUserContext error", err);
@@ -200,10 +199,10 @@ If and only if you find no relevant casts, respond with this exact format:
         return content
           ? JSON.parse(content)
           : {
-              replyText:
-                "No relevant trending casts found in the provided data.",
-              link: "",
-            };
+            replyText:
+              "No relevant trending casts found in the provided data.",
+            link: "",
+          };
       } catch (jsonErr) {
         console.warn("Response was not valid JSON Gemini:", content);
         return { error: "Invalid JSON format in AI response", raw: content };
