@@ -191,11 +191,11 @@ export class DBService {
     }
   }
 
-  async addCastReply(cast_hash: string) {
+  async addCastReply(cast_hash: string, cast_reply_hash: string) {
     try {
       const { data, error } = await this.supabase
         .from("cast_replies")
-        .insert([{ cast_hash }]);
+        .insert({ cast_hash, cast_reply_hash });
       if (error) throw error;
       return { success: true, data };
     } catch (err: any) {
