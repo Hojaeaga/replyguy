@@ -125,14 +125,13 @@ Output: zora-frame-builder, music-nft-creator, frame-launcher, zora-user, creati
 
     const prompt = `
 <task>
-Analyze the user's cast and prioritize finding relevant content from similar users first, then trending feeds if necessary. Select the SINGLE most relevant cast that connects with the user's interests or topic. Only select from the actual provided content - never generate or fabricate anything.
+Analyze the user's cast and determine whether it warrants a response with a relevant connection. Only respond when you can provide genuinely valuable connections to help the user. Prioritize finding relevant content from similar users first, then trending feeds if necessary.
 </task>
 
 <user_cast>
 ${userCast}
 </user_cast>
 
-Use the cast summary to understand the user's interests and context, this will provide a deeper understanding of the user's intent and preferences.
 <cast_summary>
 ${castSummary}
 </cast_summary>
@@ -145,22 +144,55 @@ ${formattedSimilarUserFeeds}
 ${formattedTrendingFeeds}
 </trending_feeds>
 
-<instructions>
+<decision_criteria>
+First, determine if the user's cast warrants a response based on these guidelines:
+
+1. RESPOND when the user is clearly seeking:
+   - Technical help or advice
+   - Job opportunities or career connections
+   - Event information
+   - People with similar interests
+   - Project collaborators
+   - Educational resources
+   - Community connections
+
+2. DO NOT RESPOND when the user's cast is:
+   - Generic greetings without specific content
+   - Simple statements not seeking engagement
+   - Casual observations without questions
+   - Personal updates not inviting discussion
+   - Content with no clear intent or question
+   - Vague or ambiguous posts with insufficient context
+
+If you determine NO RESPONSE is needed, output:
+{
+  "replyText": "No response needed for this cast.",
+  "link": ""
+}
+</decision_criteria>
+
+<response_instructions>
+If the user's cast DOES warrant a response:
+
 1. First identify key themes, topics, and interests in the user's cast.
 2. PRIORITIZE similar user feeds - examine these first and try to find the most relevant match here before looking at trending feeds.
 3. Only if no good match exists in similar user feeds, then examine the trending feeds.
 4. Select only ONE existing cast that best relates to the user's content based on:
-    - Topic relevance
-    - Semantic similarity
-    - Any shared channels or interests
-5. If no relevant casts are found or if all feeds are malformed, respond with: "No relevant trending casts found in the provided data."
+   - Topic relevance
+   - Semantic similarity
+   - Any shared channels or interests
+   - Potential to help with events, technical issues, jobs, or connections
+5. If no truly relevant casts are found or if all feeds are malformed, respond with: "No relevant trending casts found in the provided data."
 6. Never fabricate or generate casts - only select from what is actually provided in the similar_user_feeds or trending_feeds.
 7. AVOID talking about airdrops and giveaways.
-</instructions>
+</response_instructions>
 
-<output_guidelines>
-- replyText: A string with the message "You should connect with [author_username], who said: '[cast_text]'" - Max 60-70 words, 320 characters.
-- link: A string with the URL "https://warpcast.com/[author_username]/[cast_hash]" - this should MATCH the cast you selected and not a fabricated/random one.
+<output_format>
+For a relevant match, respond with:
+{
+  "replyText": "You should connect with [author_username], who said: '[cast_text]'" - Max 60-70 words, 320 characters.
+  "link": "https://warpcast.com/[author_username]/[cast_hash]"
+}
 
 If a channel exists, append "Join the conversation in the /[channel_name] channel." to the replyText value.
 
@@ -170,12 +202,18 @@ Example output:
   "link": "https://warpcast.com/username123/0x123abc"
 }
 
-If and only if you find no relevant casts, respond with this exact format:
+If no relevant casts found OR if the user's cast doesn't warrant a response:
 {
   "replyText": "No relevant trending casts found in the provided data.",
   "link": ""
 }
-</output_guidelines>
+
+OR (for casts that don't need a response):
+{
+  "replyText": "No response needed for this cast.",
+  "link": ""
+}
+</output_format>
     `;
 
     try {
