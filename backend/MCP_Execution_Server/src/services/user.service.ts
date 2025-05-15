@@ -15,7 +15,7 @@ export class UserService {
     private aiService: AIService,
     private db: DBService,
     private geminiService?: GeminiAiService,
-  ) {}
+  ) { }
 
   private async summarizeUserContextSafe(
     userData: any,
@@ -240,7 +240,7 @@ export class UserService {
   }
 
   async registerCast(fid: string, cast: any) {
-    console.log("registering cast");
+    console.log("registering cast", `https://warpcast.com/yourreplyguy/${cast.hash}`);
 
     if (cast.text === "") {
       console.log("Cast text is empty, skipping");
@@ -318,7 +318,7 @@ export class UserService {
 
       if (
         aiResponse.replyText ===
-          "No relevant trending casts found in the provided data." ||
+        "No relevant trending casts found in the provided data." ||
         aiResponse.replyText === "No response needed for this cast."
         || aiResponse.link === ""
       ) {
@@ -336,9 +336,8 @@ export class UserService {
         ],
       });
 
-      console.log("Cast replied");
-      await this.db.addCastReply(castReply.cast.hash);
-      console.log(aiResponse);
+      console.log("Cast replied", `https://warpcast.com/yourreplyguy/${castReply.cast.hash}`);
+      await this.db.addCastReply(cast.hash, castReply.cast.hash);
       return { success: true, data: aiResponse };
     } catch (err: any) {
       console.error("registerCast error", err);
