@@ -15,7 +15,7 @@ export class UserService {
     private aiService: AIService,
     private db: DBService,
     private geminiService?: GeminiAiService,
-  ) { }
+  ) {}
 
   private async summarizeUserContextSafe(
     userData: any,
@@ -267,7 +267,6 @@ export class UserService {
       if (!isRegistered.success || !isRegistered.registered) {
         throw new Error(`User with fid ${fid} not found`);
       }
-
       if (!isSubscribed.success || !isSubscribed.subscribed) {
         throw new Error(`User with fid ${fid} is not subscribed`);
       }
@@ -319,7 +318,9 @@ export class UserService {
 
       if (
         aiResponse.replyText ===
-        "No relevant trending casts found in the provided data."
+          "No relevant trending casts found in the provided data." ||
+        aiResponse.replyText === "No response needed for this cast."
+        || aiResponse.link === ""
       ) {
         console.log("No relevant trending casts found");
         return { success: true, data: aiResponse };
@@ -336,9 +337,8 @@ export class UserService {
       });
 
       console.log("Cast replied");
-
       await this.db.addCastReply(castReply.cast.hash);
-
+      console.log(aiResponse);
       return { success: true, data: aiResponse };
     } catch (err: any) {
       console.error("registerCast error", err);
