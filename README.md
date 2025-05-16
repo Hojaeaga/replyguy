@@ -16,10 +16,9 @@ People waste hours of their life in scrolling through the internet in search of 
 
 Lack of personalization and context in the content that is being consumed.
 
-
 ### What are the possible solutions to this problem?
 
-The generic solution to this is to ask user to define their interests and preferences, and then based on that, the content is personalized. 
+The generic solution to this is to ask user to define their interests and preferences, and then based on that, the content is personalized.
 
 But this is not a good or scalable solution. No one has time to define their interests or select the option to "Not Interested".
 
@@ -27,7 +26,7 @@ But this is not a good or scalable solution. No one has time to define their int
 
 ReplyGuy uses AI intelligence to understand each and every user's post and its intent, and if the post is reply worthy, then the agent will fetch the most relevant content across Farcaster and reply to the user's post with a link to it.
 
-How it works :
+### How it works
 
 Single click subscribe to the ReplyGuy in the Farcaster miniapp.
 
@@ -35,6 +34,23 @@ That's it! User not require to provide any information or context.
 
 Now cast like before and get the most relevant content in your feed.
 
+### Tech Stack
+
+1. Neynar APIs for interacting with the Farcaster Protocol.
+2. Eigen Layer AVS on Base and Ethereum.
+3. Gemini and OpenAI for generating embeddings and replies.
+4. Supabase for storing the data.
+
+#### Contracts
+
+The following AVS contracts have been deployed on Base Sepolia (L2) and Ethereum Holesky (L1):
+
+- [AVS_GOVERNANCE_ADDRESS](https://holesky.etherscan.io/address/0xF008031601847dCDe95904bB94e1F0D9804E0e4b)
+- [ATTESTATION_CENTER_ADDRESS](https://sepolia.basescan.org/address/0x87d95ad1730ebaeed5a8a563ce69febd7e14220a)
+
+> NOTE
+> We have deployed AVS on the *Base Sepolia and Ethereum Sepolia testnet*, due to the cost and setup of the reward distribution mechanism for validators, as we are not generating revenue right now. 
+> But we have a solid plan to generate revenue that is to provide a service to subscribers to boost their posts' visibility on Farcaster to a targeted audience. This is a well-requested feature and is present on every social media platform at a very high price, but we will be able to provide it at a very low price with much better results.
 
 ## Challenges we ran into
 
@@ -63,14 +79,3 @@ To fix this we came up with the following solution:
 Verifiable Agent using Eigen Layer.
 
 We built an Eigen Layer AVS on Base and Ethereum to verify the data and the replies posted by the agent, using Reclaim Protocol and Othentic stack.
-
-> NOTE
-> We have deployed AVS on the *Base Sepolia and Ethereum Sepolia testnet*, due to the cost and setup of the reward distribution mechanism for validators, as we are not generating revenue right now. 
-> But we have a solid plan to generate revenue that is to provide a service to subscribers to boost their posts' visibility on Farcaster to a targeted audience. This is a well-requested feature and is present on every social media platform at a very high price, but we will be able to provide it at a very low price with much better results.
-
-## Tech Stack
-
-1. Farcaster profile.
-2. Eigen Layer AVS on Base and Ethereum.
-3. Gemini and OpenAI for generating embeddings and replies.
-4. Supabase for storing the data.
