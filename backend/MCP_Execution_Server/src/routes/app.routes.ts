@@ -14,7 +14,7 @@ export function appRouter(): Router {
         async (req: Request, res: Response, next: NextFunction): Promise<void> => {
             try {
                 const result = await db.fetchSubscriberCount();
-                res.status(200).json({ result });
+                res.status(200).json({ data: result.data });
             } catch (error) {
                 console.error("Error in /app/get-subscriber-count:", error);
                 next(error);
