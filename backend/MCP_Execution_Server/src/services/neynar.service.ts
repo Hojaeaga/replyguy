@@ -3,6 +3,7 @@ import type { ReclaimClient } from "@reclaimprotocol/zk-fetch";
 import type { AVSService } from "./avs.service.js";
 import type { IpfsService } from "./ipfs.service.js";
 import { config } from "../config.js";
+import { randomBytes } from "node:crypto";
 export class NeynarService {
 
   NEYNAR_BASE_URL = "https://api.neynar.com/v2/farcaster";
@@ -98,22 +99,60 @@ export class NeynarService {
     parentHash: string;
     embeds?: [{ url: string }];
   }) {
+    const generatedidem = randomBytes(16).toString("hex");
+
+    const publicOptions = {
+      method: 'POST',
+      body: JSON.stringify({
+        idem: generatedidem,
+        signer_uuid: this.signerUuid,
+        text,
+        parent: parentHash,
+        embeds,
+      })
+    }
+
+    const privateOptions = {
+      headers: this.getHeaders()
+    }
+
+    let proof: any;
+    let ipfsHash: any;
+
     try {
-      const res = await axios.post(
+      proof = await this.reclaimClient.zkFetch(
         `${this.NEYNAR_BASE_URL}/cast`,
-        {
-          signer_uuid: this.signerUuid,
-          text,
-          parent: parentHash,
-          embeds,
-        },
-        { headers: this.getHeaders() },
+        publicOptions,
+        privateOptions,
+        5
       );
-      return res.data;
+
     } catch (err) {
       console.error("replyToCast error", err);
       return null;
     }
+
+    const castReply = JSON.parse(proof.extractedParameterValues.data);
+
+    try {
+      ipfsHash = await this.ipfsService.publishJSON(proof);
+      console.log("ipfsHash", ipfsHash);
+    } catch (error) {
+      console.error("publishJSON error", error);
+    }
+
+    try {
+      await this.avs.sendTask(
+        ipfsHash,
+        castReply.cast.hash,
+        1,
+      );
+      console.log("Sent to AVS Network");
+    } catch (err) {
+      console.error("sendTask error", err);
+    }
+
+    return castReply;
   }
 
   async fetchUserRepliesAndRecasts(fid: string) {
@@ -162,7 +201,6 @@ export class NeynarService {
     const url = `${this.NEYNAR_BASE_URL}/feed/user/popular?fid=${fid}`;
 
     let proof: any;
-    let ipfsHash: any;
 
     try {
       proof = await this.reclaimClient.zkFetch(
@@ -198,22 +236,6 @@ export class NeynarService {
       likes: cast.reactions?.likes_count || 0,
       recasts: cast.reactions?.recasts_count || 0,
     }));
-
-    try {
-      ipfsHash = await this.ipfsService.publishJSON(proof);
-    } catch (error) {
-      console.error("publishJSON error", error);
-    }
-
-    try {
-      await this.avs.sendTask(
-        ipfsHash,
-        proof.claimData.timestampS.toString(),
-        0,
-      );
-    } catch (err) {
-      console.error("sendTask error", err);
-    }
 
     return simplifiedCasts;
   }
@@ -398,8 +420,6 @@ export class NeynarService {
     }
 
     try {
-      console.log("ipfsHash", ipfsHash);
-
       await this.avs.sendTask(
         ipfsHash,
         proof.claimData.timestampS.toString(),

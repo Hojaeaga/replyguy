@@ -8,10 +8,11 @@ const router = Router()
 
 router.post("/validate", async (req: any, res: any) => {
     const proofOfTask = req.body.proofOfTask;
-    const ipfsHash = req.body.data;
-    console.log(`Validate task: proof of task: ${proofOfTask}`);
+    const additionalData = req.body.data;
+    const taskDefinitionId = req.body.taskDefinitionId;
+
     try {
-        const result = await validate(proofOfTask, ipfsHash);
+        const result = await validate(proofOfTask, additionalData, taskDefinitionId);
         console.log('Vote:', result ? 'Approve' : 'Not Approved');
         return res.status(200).send(new CustomResponse(result));
     } catch (error) {

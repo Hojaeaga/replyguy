@@ -43,7 +43,7 @@ async function registerUser() {
     avs,
     ipfs,
   );
-  const userService = new UserService(neynar, ai, db,gemini);
+  const userService = new UserService(neynar, ai, db, gemini);
   /**
    * Channel Fetched
    * Nomads
@@ -59,7 +59,7 @@ async function registerUser() {
    * farcaster
    */
 
-  const channelId = "degen";
+  const channelId = "theai";
 
   // Define the response type based on the Farcaster API docs
   interface ChannelMember {
@@ -131,6 +131,5 @@ async function registerUser() {
 
   return;
 }
-
 // Run the script
 registerUser();
