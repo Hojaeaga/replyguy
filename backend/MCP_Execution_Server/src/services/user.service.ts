@@ -240,7 +240,7 @@ export class UserService {
   }
 
   async registerCast(fid: string, cast: any) {
-    console.log("registering cast", `https://warpcast.com/yourreplyguy/${cast.hash}`);
+    console.log("registering cast", `https://warpcast.com/${cast.author.username}/${cast.hash}`);
 
     if (cast.text === "") {
       console.log("Cast text is empty, skipping");
@@ -281,7 +281,6 @@ export class UserService {
 
       const { data: similarUsers, error: similarityError } =
         await this.db.fetchSimilarFIDs(castEmbeddings, 0.4, 3);
-      console.log("Similar users", similarUsers);
       if (similarityError || !similarUsers) {
         throw new Error("Error finding similar users");
       }
@@ -317,13 +316,17 @@ export class UserService {
       }
 
       if (
-        aiResponse.replyText ===
-        "No relevant trending casts found in the provided data." ||
+        aiResponse.replyText === "No relevant trending casts found in the provided data." ||
         aiResponse.replyText === "No response needed for this cast."
-        || aiResponse.link === ""
       ) {
-        console.log("No relevant trending casts found");
+        console.log(`AI indicated no reply needed or no relevant data: ${aiResponse.replyText}`);
         return { success: true, data: aiResponse };
+      }
+
+      if (aiResponse.link === "") {
+        // Assuming a link is mandatory for a reply. If not, this logic might need to change.
+        console.log("AI response generated, but no link was provided. Skipping reply.");
+        return { success: true, data: aiResponse }; // Still returning success as the process didn't fail, but decided not to act.
       }
 
       const castReply = await this.neynarService.replyToCast({
