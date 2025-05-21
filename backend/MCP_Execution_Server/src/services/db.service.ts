@@ -55,7 +55,7 @@ export class DBService {
     try {
       const { data, error } = await this.supabase
         .from("user_embeddings")
-        .update({ is_subscribed: false })
+        .update({ is_subscribed: false, is_unsubscribed: true })
         .eq("fid", fid);
       if (error) throw error;
       return { success: true, data };
