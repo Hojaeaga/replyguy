@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useQuery } from "wagmi/query";
 import { sdk } from "@farcaster/frame-sdk";
 import { queryClient } from "./providers/WagmiProvider";
+import { toast } from "sonner";
 type UserSubscriptionResponse = {
   result: {
     subscribed: boolean;
@@ -152,7 +153,8 @@ export default function Home() {
 
   const handleSubscribe = async () => {
     if (!context || !context.user?.displayName) {
-      console.log("User not logged in");
+      toast.warning("This is a mini app, redirecting you to the main app");
+      window.location.href = "https://farcaster.xyz/miniapps/1six6FpX-nRm/replyguy"
       return;
     }
     await mutation.mutateAsync(context.user.fid);
